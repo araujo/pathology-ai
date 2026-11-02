@@ -1,0 +1,38 @@
+# Volumetric (CT/MRI) template. SCHEMA ONLY in 001: no series reader, reconstruction,
+# normalisation or 3D model implementation is registered; execution is reported unsupported.
+schema_version: pathology-ai.pipeline/1
+pipeline_id: volume-segmentation-3d
+version: "1.0.0"
+description: Series -> volume reconstruction -> spatial normalisation -> 3D segmentation.
+inputs:
+  - {name: series, kind: image.series, spatial_kind: volume_3d}
+stages:
+  - id: reconstruct
+    operation: {name: volume.reconstruct_series, version: "1"}
+    inputs:
+      - {name: series, kind: image.series, spatial_kind: volume_3d}
+    outputs:
+      - {name: volume, kind: image.volume, spatial_kind: volume_3d}
+    resources: {memory_mb: 4096}
+  - id: normalize
+    operation: {name: volume.spatial_normalize, version: "1"}
+    requires_preprocessing: true
+    inputs:
+      - {name: volume, kind: image.volume, spatial_kind: volume_3d}
+    outputs:
+      - {name: volume, kind: image.volume, spatial_kind: volume_3d}
+    resources: {memory_mb: 4096}
+  - id: segment
+    operation: {name: model.invoke, version: "1"}
+    model_slot: segmenter_3d
+    inputs:
+      - {name: volume, kind: image.volume, spatial_kind: volume_3d}
+    outputs:
+      - {name: segmentation, kind: prediction.segmentation_3d}
+    resources: {gpu_count: 1, memory_mb: 8192}
+edges:
+  - [$input.series, reconstruct.series]
+  - [reconstruct.volume, normalize.volume]
+  - [normalize.volume, segment.volume]
+outputs:
+  segmentation: segment.segmentation

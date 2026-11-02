@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pathology-ai.local/contracts/preprocessing/v1/patch-manifest.schema.json",
+  "title": "Patch manifest (pathology-ai.patch-manifest/1)",
+  "description": "Model-independent description of a WSI patch extraction. Candidate-tissue fractions are not tumour probabilities or clinical predictions. Coordinates are canonical level-zero pixels.",
+  "type": "object",
+  "$defs": {
+    "component": {
+      "type": "object",
+      "required": ["role", "name", "version"],
+      "properties": {"role": {"type": "string"}, "name": {"type": "string"}, "version": {"type": "string"}},
+      "additionalProperties": false
+    },
+    "fraction": {"type": "number", "minimum": 0, "maximum": 1},
+    "nullable_fraction": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "level0_rect": {
+      "type": "object",
+      "required": ["x", "y", "width", "height", "frame"],
+      "properties": {
+        "x": {"type": "number", "minimum": 0},
+        "y": {"type": "number", "minimum": 0},
+        "width": {"type": "number", "exclusiveMinimum": 0},
+        "height": {"type": "number", "exclusiveMinimum": 0},
+        "frame": {"const": "wsi_level0_pixel"}
+      },
+      "additionalProperties": false
+    },
+    "spacing": {"type": ["array", "null"], "items": {"type": "number", "exclusiveMinimum": 0}, "minItems": 2, "maxItems": 2},
+    "pairs": {"type": "array", "items": {"type": "array", "prefixItems": [{"type": "string"}, {"type": ["string", "number", "boolean"]}], "minItems": 2, "maxItems": 2}}
+  },
+  "required": [
+    "schema_version", "image_id", "source_integrity", "scene", "pipeline", "reader", "backend",
+    "detector", "detector_parameters", "detector_derived", "mask_digest", "planner", "extractor",
+    "plan_digest", "plan_spec", "resolved", "counts", "selection_note", "validity_note",
+    "pixel_storage", "patches", "capability_checks", "limitations", "coordinate_convention",
+    "notice", "manifest_digest", "provenance_digest"
+  ],
+  "properties": {
+    "schema_version": {"const": "pathology-ai.patch-manifest/1"},
+    "image_id": {"type": "object", "required": ["value"], "properties": {"value": {"type": "string"}}},
+    "source_integrity": {"type": ["string", "null"]},
+    "scene": {"type": "integer", "minimum": 0},
+    "pipeline": {"type": ["object", "null"]},
+    "reader": {"$ref": "#/$defs/component"},
+    "backend": {"$ref": "#/$defs/component"},
+    "detector": {"$ref": "#/$defs/component"},
+    "planner": {"$ref": "#/$defs/component"},
+    "extractor": {"$ref": "#/$defs/component"},
+    "detector_parameters": {"$ref": "#/$defs/pairs"},
+    "detector_derived": {"$ref": "#/$defs/pairs"},
+    "mask_digest": {"$ref": "#/$defs/sha256"},
+    "plan_digest": {"$ref": "#/$defs/sha256"},
+    "manifest_digest": {"$ref": "#/$defs/sha256"},
+    "provenance_digest": {"$ref": "#/$defs/sha256"},
+    "plan_spec": {
+      "type": "object",
+      "required": ["width", "height", "units", "level", "target_spacing_um", "edge_policy", "min_tissue_fraction", "min_acquired_fraction", "validity_policy", "selection", "max_patches"],
+      "properties": {
+        "units": {"enum": ["pixels", "micrometers"]},
+        "edge_policy": {"enum": ["inside_only", "align_to_edge"]},
+        "validity_policy": {"enum": ["require_reported", "assume_acquired"]},
+        "selection": {"enum": ["fail_closed", "row_major_first", "uniform_stride"]},
+        "min_tissue_fraction": {"$ref": "#/$defs/fraction"},
+        "min_acquired_fraction": {"$ref": "#/$defs/fraction"}
+      }
+    },
+    "resolved": {
+      "type": "object",
+      "required": ["level", "downsample", "width_px", "height_px", "stride_x_px", "stride_y_px", "effective_spacing_um", "resampling"],
+      "properties": {
+        "level": {"type": "integer", "minimum": 0},
+        "downsample": {"type": "number", "minimum": 1},
+        "effective_spacing_um": {"$ref": "#/$defs/spacing"},
+        "resampling": {"const": "none"}
+      }
+    },
+    "counts": {"type": "array", "items": {"type": "array", "prefixItems": [{"type": "string"}, {"type": "integer", "minimum": 0}], "minItems": 2, "maxItems": 2}},
+    "selection_note": {"type": "string"},
+    "validity_note": {"type": "string"},
+    "pixel_storage": {"enum": ["in_memory", "not_materialized"]},
+    "patches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["patch_id", "plan_index", "row", "col", "scene", "level0", "level_rect", "downsample", "width_px", "height_px", "effective_spacing_um", "dtype", "channel_order", "samples_per_pixel", "validity_semantics", "tissue_fraction", "planned_acquired_fraction", "read_validity", "read_acquired_fraction", "read_provenance_digest", "decoder_transformations", "artifact_id"],
+        "properties": {
+          "patch_id": {"type": "string", "pattern": "^pai-patch-[0-9a-f]{32}$"},
+          "plan_index": {"type": "integer", "minimum": 0},
+          "level0": {"$ref": "#/$defs/level0_rect"},
+          "effective_spacing_um": {"$ref": "#/$defs/spacing"},
+          "channel_order": {"enum": ["rgb", "bgr", "rgba", "grayscale", "multichannel"]},
+          "validity_semantics": {"enum": ["acquisition_coverage", "backend_transparency", "not_reported"]},
+          "tissue_fraction": {"$ref": "#/$defs/fraction"},
+          "planned_acquired_fraction": {"$ref": "#/$defs/nullable_fraction"},
+          "read_acquired_fraction": {"$ref": "#/$defs/nullable_fraction"},
+          "read_validity": {"enum": ["all_acquired", "partially_acquired", "none_acquired", "unknown", null]},
+          "read_provenance_digest": {"oneOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]},
+          "artifact_id": {"type": ["object", "null"]}
+        }
+      }
+    },
+    "capability_checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["requirement", "status", "detail"],
+        "properties": {"status": {"enum": ["satisfied", "decided_by_policy"]}}
+      }
+    },
+    "limitations": {"type": "array", "items": {"type": "string"}},
+    "coordinate_convention": {"type": "string"},
+    "notice": {"type": "string"}
+  },
+  "additionalProperties": false
+}

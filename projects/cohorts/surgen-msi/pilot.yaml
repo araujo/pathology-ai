@@ -1,0 +1,27 @@
+# SurGen MSI/dMMR extraction pilot selection (SPEC-008 Phase C1). Configuration only: the
+# generic selector (domain/pilot.py) knows nothing about SurGen.
+#
+# Purpose: a small, representative set of slides to check the extraction configuration (memory,
+# throughput, output integrity, resume, cost). It is NOT a scientific sample and no result of the
+# pilot may inform labels, thresholds or model selection.
+#
+# Rules enforced by the selector:
+#   - candidates are eligible records of manifest surgen-msi@1 in the partitions below, which
+#     must be among the manifest's approved pilot partitions (D-6: train, validation);
+#   - the test partition is refused outright;
+#   - strata = sub-cohort x label over ALL eligible records, so a class missing from the pilot
+#     partitions is a reported shortfall, never a substitution;
+#   - within a stratum, slides whose image a local inventory has content-verified come first
+#     (fewer downloads), then the seeded SHA-256 rank of the slide id;
+#   - at most one slide per case (group).
+#
+# 2 slides x 2 sub-cohorts x 2 classes = 8 slides. Every positive slide must be downloaded:
+# Phase A found no MSI-positive WSI on this host.
+schema: pathology-ai.pilot-config/1
+plan_id: surgen-msi-pilot-c1
+seed: 20261102
+partitions: [train, validation]
+strata: [cohort, label]
+per_stratum: 2
+prefer: verified_images
+decision: D-6

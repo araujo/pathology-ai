@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pathology-ai.local/contracts/analysis/v1/capability-list.schema.json",
+  "title": "Pathology AI Analysis API v1 - capability list",
+  "description": "Per project: whether its bound models are VALIDATED for the exact scope, merely SUPPORTED_UNVALIDATED (research opt-in required) or INCOMPATIBLE.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "capabilities"],
+  "properties": {
+    "schema_version": {"const": "pathology-ai.analysis/1.0"},
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["project_id", "task", "pipeline", "models", "modality", "status", "requires_research_acknowledgement", "reasons"],
+        "properties": {
+          "project_id": {"type": "string"},
+          "task": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["task_id", "version", "task_type", "output_kind", "classes"],
+            "properties": {
+              "task_id": {"type": "string"},
+              "version": {"type": "string"},
+              "task_type": {"enum": ["binary_classification", "multiclass_classification", "multilabel_classification", "regression", "segmentation", "detection", "quantification"]},
+              "output_kind": {"enum": ["image_classification", "continuous_score", "region_prediction", "detection", "segmentation", "volumetric_segmentation"]},
+              "classes": {"type": "array", "items": {"type": "string"}}
+            }
+          },
+          "pipeline": {"type": "string"},
+          "models": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["slot", "model_id", "version", "family", "synthetic"],
+              "properties": {
+                "slot": {"type": "string"},
+                "model_id": {"type": "string"},
+                "version": {"type": "string"},
+                "family": {"type": "string"},
+                "synthetic": {"type": "boolean"}
+              }
+            }
+          },
+          "modality": {"type": "string"},
+          "status": {"enum": ["VALIDATED", "SUPPORTED_UNVALIDATED", "INCOMPATIBLE"]},
+          "requires_research_acknowledgement": {"type": "boolean"},
+          "reasons": {"type": "array", "items": {"type": "string"}}
+        },
+        "allOf": [
+          {"if": {"properties": {"status": {"const": "SUPPORTED_UNVALIDATED"}}}, "then": {"properties": {"requires_research_acknowledgement": {"const": true}}}},
+          {"if": {"properties": {"status": {"const": "VALIDATED"}}}, "then": {"properties": {"requires_research_acknowledgement": {"const": false}}}}
+        ]
+      }
+    }
+  }
+}

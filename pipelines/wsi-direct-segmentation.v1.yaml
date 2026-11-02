@@ -1,0 +1,21 @@
+# Structurally different 2D template: direct image -> segmentation (no patches/embeddings/MIL).
+schema_version: pathology-ai.pipeline/1
+pipeline_id: wsi-direct-segmentation
+version: "1.0.0"
+description: A single model consumes the pyramidal image and emits a segmentation reference.
+inputs:
+  - {name: image, kind: image.pyramidal_2d, spatial_kind: pyramidal_2d}
+stages:
+  - id: segment
+    operation: {name: model.invoke, version: "1"}
+    model_slot: segmenter
+    requires_preprocessing: true
+    inputs:
+      - {name: image, kind: image.pyramidal_2d, spatial_kind: pyramidal_2d}
+    outputs:
+      - {name: segmentation, kind: prediction.segmentation_2d}
+    resources: {memory_mb: 1024}
+edges:
+  - [$input.image, segment.image]
+outputs:
+  segmentation: segment.segmentation

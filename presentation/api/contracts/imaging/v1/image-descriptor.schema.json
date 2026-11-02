@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pathology-ai.local/contracts/imaging/v1/image-descriptor.schema.json",
+  "title": "Pathology AI Imaging API v1 - Image descriptor",
+  "description": "Canonical image identity, modality, format, optional clinical context and modality-specific spatial metadata. Contains no filesystem paths. Missing physical metadata is null, never fabricated.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "image_id", "modality", "format", "channel_order", "source_checksum", "context", "geometry", "access"],
+  "properties": {
+    "schema_version": {"const": "pathology-ai.imaging/1.0"},
+    "image_id": {"$ref": "#/$defs/id"},
+    "modality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "spatial_kind"],
+      "properties": {
+        "code": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]{0,63}$"},
+        "spatial_kind": {"enum": ["pyramidal_2d", "volume_3d", "volume_4d"]}
+      }
+    },
+    "format": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]{0,63}$", "description": "Container/encoding code. Never sufficient evidence of modality."},
+    "channel_order": {"enum": ["rgb", "bgr", "rgba", "grayscale", "multichannel", null]},
+    "source_checksum": {"type": ["string", "null"]},
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tissue", "disease"],
+      "description": "Curated context; null means unknown. Never a guessed default.",
+      "properties": {
+        "tissue": {"type": ["string", "null"]},
+        "disease": {"type": ["string", "null"]}
+      }
+    },
+    "geometry": {"oneOf": [{"$ref": "#/$defs/pyramidal_2d"}, {"$ref": "#/$defs/volume"}]},
+    "access": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["regions", "thumbnail", "volume", "slices"],
+      "description": "Which Imaging API operations a deployment can serve for this image.",
+      "properties": {
+        "regions": {"type": "boolean"},
+        "thumbnail": {"type": "boolean"},
+        "volume": {"type": "boolean"},
+        "slices": {"type": "boolean"}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"modality": {"properties": {"spatial_kind": {"const": "pyramidal_2d"}}}}},
+      "then": {"properties": {"geometry": {"$ref": "#/$defs/pyramidal_2d"}}},
+      "else": {"properties": {"geometry": {"$ref": "#/$defs/volume"}}}
+    }
+  ],
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"},
+    "pyramidal_2d": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "frame", "width", "height", "levels", "pixel_spacing_um"],
+      "properties": {
+        "type": {"const": "pyramidal_2d"},
+        "frame": {"const": "wsi_level0_pixel"},
+        "width": {"type": "integer", "minimum": 1},
+        "height": {"type": "integer", "minimum": 1},
+        "levels": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["index", "width", "height", "downsample"],
+            "properties": {
+              "index": {"type": "integer", "minimum": 0},
+              "width": {"type": "integer", "minimum": 1},
+              "height": {"type": "integer", "minimum": 1},
+              "downsample": {"type": "number", "minimum": 1}
+            }
+          }
+        },
+        "pixel_spacing_um": {
+          "oneOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["x", "y"],
+              "properties": {"x": {"type": "number", "exclusiveMinimum": 0}, "y": {"type": "number", "exclusiveMinimum": 0}}
+            }
+          ]
+        }
+      }
+    },
+    "vec3": {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3},
+    "volume": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "frame", "physical_frame", "shape", "spacing_mm", "origin_mm", "direction", "time_points", "series_uid"],
+      "properties": {
+        "type": {"enum": ["volume_3d", "volume_4d"]},
+        "frame": {"const": "volume_voxel_index"},
+        "physical_frame": {"const": "patient_lps_mm"},
+        "shape": {"type": "array", "items": {"type": "integer", "minimum": 1}, "minItems": 3, "maxItems": 3},
+        "spacing_mm": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/vec3"}]},
+        "origin_mm": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/vec3"}]},
+        "direction": {"oneOf": [{"type": "null"}, {"type": "array", "items": {"type": "number"}, "minItems": 9, "maxItems": 9}]},
+        "time_points": {"type": ["integer", "null"], "minimum": 1},
+        "series_uid": {"type": ["string", "null"]}
+      }
+    }
+  }
+}

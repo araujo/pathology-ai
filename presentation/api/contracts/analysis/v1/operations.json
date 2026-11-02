@@ -1,0 +1,11 @@
+{
+  "api": "pathology-ai.analysis",
+  "version": "1.0",
+  "status": "contract-only (no server implemented in 001)",
+  "operations": [
+    {"id": "list_capabilities", "method": "GET", "path": "/analysis/v1/capabilities", "response": "capability-list"},
+    {"id": "submit_analysis", "method": "POST", "path": "/analysis/v1/analyses", "request": "submit-analysis-request", "response": "analysis-job", "status_code": 202},
+    {"id": "get_analysis", "method": "GET", "path": "/analysis/v1/analyses/{job_id}", "response": "analysis-job"},
+    {"id": "get_result", "method": "GET", "path": "/analysis/v1/analyses/{job_id}/result", "response": "analysis-result", "errors": {"409": "job not COMPLETED"}}
+  ]
+}

@@ -1,0 +1,96 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pathology-ai"
+dynamic = ["version"]
+description = "Pathology AI platform foundations: modality-aware, model-agnostic imaging AI contracts (research use only)"
+requires-python = ">=3.12"
+dependencies = [
+    # Used only by synthetic plugins; the domain layer never imports it.
+    "numpy>=1.26",
+    # Used only by the infrastructure configuration adapter.
+    "pyyaml>=6.0",
+]
+
+# Real image reader backends are optional and isolated in their own plugin packages
+# (SPEC-003 / ADR-003). The base install never imports them.
+[project.optional-dependencies]
+# LGPL-3.0: approved for research and prototyping; commercial redistribution requires a
+# separate compliance review.
+czi = ["pylibczirw>=6.1.0,<7"]
+# LGPL-2.1 (openslide-python, OpenSlide); openslide-bin bundles the native library.
+openslide = ["openslide-python>=1.4.6,<2", "openslide-bin>=4.0.1,<5"]
+# Foundation-model inference runtime (SPEC-006 / ADR-006 D3): PyTorch (BSD-3-Clause) and timm
+# (Apache-2.0). Weights are never bundled or downloaded; checkpoints are explicit local files
+# whose licences are the operator's responsibility (UNI: CC-BY-NC-ND 4.0, gated access).
+embedding = ["torch>=2.4,<3", "timm>=1.0.9,<2"]
+
+[project.scripts]
+pathology-ai-demo = "cli:main"
+pathology-ai-imaging-smoke = "cli:imaging_smoke_main"
+pathology-ai-preprocess = "cli:preprocess_main"
+pathology-ai-embed = "cli:embed_main"
+pathology-ai-mil = "cli:mil_main"
+pathology-ai-cohort = "cli:cohort_main"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.6",
+    "mypy>=1.11",
+    "pytest>=8.3",
+    "jsonschema>=4.23",
+    "types-PyYAML>=6.0",
+    "types-jsonschema>=4.23",
+    # Exercise both optional reader adapters in the development environment.
+    "pathology-ai[czi,openslide,embedding]",
+]
+
+[tool.hatch.version]
+path = "application/version.py"
+
+# First-party packages live at the repository root (ADR-002). List them explicitly so
+# tests, pipelines, projects and governance files are never installed as packages.
+[tool.hatch.build.targets.wheel]
+only-include = [
+    "domain",
+    "ports",
+    "application",
+    "infrastructure",
+    "plugins",
+    "presentation",
+    "bootstrap.py",
+    "cli.py",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = [
+    "domain",
+    "ports",
+    "application",
+    "infrastructure",
+    "plugins",
+    "presentation",
+    "bootstrap.py",
+    "cli.py",
+    "tests",
+]
+
+# The optional reader backends and timm ship without (complete) type information.
+[[tool.mypy.overrides]]
+module = ["pylibCZIrw", "pylibCZIrw.*", "openslide", "openslide.*", "timm", "timm.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"

@@ -1,0 +1,35 @@
+# SYNTHETIC example: generated classes with an injected signal; no clinical meaning.
+schema: pathology-ai.mil-experiment-config/1
+name: synthetic-binary
+task:
+  id: synthetic-binary-target
+  version: "1"
+  type: binary_classification
+  classes: [class-a, class-b]
+  positive_class: class-b
+dataset:
+  id: synthetic-binary
+  version: "1"
+  labels: labels.csv
+  label_source: synthetic-generator
+  label_source_version: "0.1.0"
+  compatibility_policy: exact@1
+split:
+  strategy: group-stratified@1
+  seed: 7
+  fractions: {train: 0.6, validation: 0.2, test: 0.2}
+model:
+  architecture: attention-mil
+  hyperparameters: {attention_dim: 16, dropout: 0.0, gated: true, hidden_dim: 32}
+training:
+  seed: 13
+  epochs: 40
+  batch_slides: 4
+  optimizer: {name: adam, learning_rate: 0.005, weight_decay: 0.0001}
+  gradient_clip_norm: 5.0
+  class_weighting: false
+  early_stopping: {metric: validation_loss, mode: min, patience: 8, min_delta: 0.0}
+  device: cpu
+  bags:
+    train: {max_instances: 48, seed: 13, max_batch_bytes: 67108864}
+    eval: {max_instances: null, seed: 0, max_batch_bytes: 67108864}

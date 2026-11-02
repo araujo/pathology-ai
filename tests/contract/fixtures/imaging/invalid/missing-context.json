@@ -1,0 +1,8 @@
+{"schema": "image-descriptor", "reason": "context must be explicit (null = unknown), not omitted", "document": {
+  "schema_version": "pathology-ai.imaging/1.0", "image_id": "bad-0002",
+  "modality": {"code": "wsi", "spatial_kind": "pyramidal_2d"}, "format": "svs", "channel_order": "rgb",
+  "source_checksum": null,
+  "geometry": {"type": "pyramidal_2d", "frame": "wsi_level0_pixel", "width": 10, "height": 10,
+    "levels": [{"index": 0, "width": 10, "height": 10, "downsample": 1}], "pixel_spacing_um": null},
+  "access": {"regions": false, "thumbnail": false, "volume": false, "slices": false}
+}}

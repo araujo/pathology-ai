@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pathology-ai.local/contracts/analysis/v1/analysis-job.schema.json",
+  "title": "Pathology AI Analysis API v1 - asynchronous analysis job",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "job_id", "project_id", "image_id", "status", "stage", "prediction_id", "error"],
+  "properties": {
+    "schema_version": {"const": "pathology-ai.analysis/1.0"},
+    "job_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"},
+    "project_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"},
+    "image_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"},
+    "status": {"enum": ["PENDING", "RUNNING", "COMPLETED", "FAILED", "CANCELLED"]},
+    "stage": {"type": ["string", "null"]},
+    "prediction_id": {"type": ["string", "null"]},
+    "error": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["code", "message"],
+          "properties": {"code": {"type": "string", "minLength": 1}, "message": {"type": "string"}}
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {"if": {"properties": {"status": {"const": "COMPLETED"}}}, "then": {"properties": {"prediction_id": {"type": "string"}, "error": {"type": "null"}}}},
+    {"if": {"properties": {"status": {"const": "FAILED"}}}, "then": {"properties": {"error": {"type": "object"}, "prediction_id": {"type": "null"}}}},
+    {"if": {"properties": {"status": {"enum": ["PENDING", "RUNNING", "CANCELLED"]}}}, "then": {"properties": {"prediction_id": {"type": "null"}}}}
+  ]
+}

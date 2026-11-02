@@ -1,0 +1,218 @@
+{
+ "body": {
+  "cohort": "surgen-msi@1",
+  "cohort_digest": "854f009fdb30e41304b9959a53bc3fd2e0beede091bd4f47061af931383a5a3c",
+  "criteria": {
+   "decision": "D-6",
+   "partitions": [
+    "train",
+    "validation"
+   ],
+   "per_stratum": 2,
+   "plan_id": "surgen-msi-pilot-c1",
+   "prefer": "verified_images",
+   "seed": 20261102,
+   "strata": [
+    "cohort",
+    "label"
+   ]
+  },
+  "inventory_digest": "783f44e2ea71bead23ce78c80f069e125ed8254eb49fc2f8828872ec16a836e2",
+  "pending_decisions": [
+   "D-10",
+   "D-7",
+   "D-9"
+  ],
+  "schema_version": "pathology-ai.pilot-selection/1",
+  "slides": [
+   {
+    "availability": "verified",
+    "cohort": "SR1482",
+    "file_name": "SR1482_40X_HE_T368_01.czi",
+    "group_id": "surgen:SR1482:T368",
+    "label": "negative",
+    "partition": "train",
+    "provisional": true,
+    "rank_key": "040387c48631958e78ac89d86ca9aa2e64135c6778fd4ab0c8599af461240e49",
+    "sha256": "9f35f73dfc7e250efa54a343606061ef9aa2826b8ae5ddeada5e8ba08af78d8e",
+    "size_bytes": 848763072,
+    "slide_id": "SR1482_40X_HE_T368_01",
+    "stratum": [
+     "SR1482",
+     "negative"
+    ]
+   },
+   {
+    "availability": "verified",
+    "cohort": "SR1482",
+    "file_name": "SR1482_40X_HE_T156_01.czi",
+    "group_id": "surgen:SR1482:T156",
+    "label": "negative",
+    "partition": "validation",
+    "provisional": true,
+    "rank_key": "289d39da240d1e6d81a3bcf142f07b813d5d0f9ec92b309e718bf33b0f230d8d",
+    "sha256": "2363380e036443e6c620b0cae3149abac2c8059a40776e758fe7f4b9df8f4f20",
+    "size_bytes": 579305120,
+    "slide_id": "SR1482_40X_HE_T156_01",
+    "stratum": [
+     "SR1482",
+     "negative"
+    ]
+   },
+   {
+    "availability": "not_found_in_scope",
+    "cohort": "SR1482",
+    "file_name": "SR1482_40X_HE_T224_01.czi",
+    "group_id": "surgen:SR1482:T224",
+    "label": "positive",
+    "partition": "train",
+    "provisional": true,
+    "rank_key": "02d28fcfcbadc54fa985763947d2e5825050f9818738996f3638607412db1f50",
+    "sha256": null,
+    "size_bytes": null,
+    "slide_id": "SR1482_40X_HE_T224_01",
+    "stratum": [
+     "SR1482",
+     "positive"
+    ]
+   },
+   {
+    "availability": "not_found_in_scope",
+    "cohort": "SR1482",
+    "file_name": "SR1482_40X_HE_T130_01.czi",
+    "group_id": "surgen:SR1482:T130",
+    "label": "positive",
+    "partition": "train",
+    "provisional": true,
+    "rank_key": "13549240e6496ef36313b328df97a4ed9add53a23f289656d1d045d10e47aad4",
+    "sha256": null,
+    "size_bytes": null,
+    "slide_id": "SR1482_40X_HE_T130_01",
+    "stratum": [
+     "SR1482",
+     "positive"
+    ]
+   },
+   {
+    "availability": "verified",
+    "cohort": "SR386",
+    "file_name": "SR386_40X_HE_T558_01.czi",
+    "group_id": "surgen:SR386:T558",
+    "label": "negative",
+    "partition": "validation",
+    "provisional": true,
+    "rank_key": "d91d636b8d3a7f154353c25aa4251fd50a3c1941d37f79573f3a8e22188959e9",
+    "sha256": "619200db97a683bcba057a2fdf08c34d56209bb0cafbe712615f771c6805bee2",
+    "size_bytes": 2670401216,
+    "slide_id": "SR386_40X_HE_T558_01",
+    "stratum": [
+     "SR386",
+     "negative"
+    ]
+   },
+   {
+    "availability": "not_found_in_scope",
+    "cohort": "SR386",
+    "file_name": "SR386_40X_HE_T440_01.czi",
+    "group_id": "surgen:SR386:T440",
+    "label": "negative",
+    "partition": "train",
+    "provisional": true,
+    "rank_key": "0035925253b12f888afe994e96f8260b3efa1f1a9669bbe3c85a2192f45bebd2",
+    "sha256": null,
+    "size_bytes": null,
+    "slide_id": "SR386_40X_HE_T440_01",
+    "stratum": [
+     "SR386",
+     "negative"
+    ]
+   },
+   {
+    "availability": "not_found_in_scope",
+    "cohort": "SR386",
+    "file_name": "SR386_40X_HE_T489_01.czi",
+    "group_id": "surgen:SR386:T489",
+    "label": "positive",
+    "partition": "train",
+    "provisional": true,
+    "rank_key": "07bedf3a1bbe198ae051633258e98b550d3237e0109a8aa4e6438f49a99d42ba",
+    "sha256": null,
+    "size_bytes": null,
+    "slide_id": "SR386_40X_HE_T489_01",
+    "stratum": [
+     "SR386",
+     "positive"
+    ]
+   },
+   {
+    "availability": "not_found_in_scope",
+    "cohort": "SR386",
+    "file_name": "SR386_40X_HE_T044_01.czi",
+    "group_id": "surgen:SR386:T044",
+    "label": "positive",
+    "partition": "validation",
+    "provisional": true,
+    "rank_key": "11138b4e1d4db593feb986bdafdb43102d6f42c357124caf263c2b8041ca39f0",
+    "sha256": null,
+    "size_bytes": null,
+    "slide_id": "SR386_40X_HE_T044_01",
+    "stratum": [
+     "SR386",
+     "positive"
+    ]
+   }
+  ],
+  "status": "requires_acquisition",
+  "strata": [
+   {
+    "candidates": 278,
+    "outside_pilot_partitions": 72,
+    "required": 2,
+    "selected": 2,
+    "shortfall": 0,
+    "stratum": [
+     "SR1482",
+     "negative"
+    ],
+    "verified_selected": 2
+   },
+   {
+    "candidates": 38,
+    "outside_pilot_partitions": 9,
+    "required": 2,
+    "selected": 2,
+    "shortfall": 0,
+    "stratum": [
+     "SR1482",
+     "positive"
+    ],
+    "verified_selected": 0
+   },
+   {
+    "candidates": 313,
+    "outside_pilot_partitions": 78,
+    "required": 2,
+    "selected": 2,
+    "shortfall": 0,
+    "stratum": [
+     "SR386",
+     "negative"
+    ],
+    "verified_selected": 1
+   },
+   {
+    "candidates": 26,
+    "outside_pilot_partitions": 6,
+    "required": 2,
+    "selected": 2,
+    "shortfall": 0,
+    "stratum": [
+     "SR386",
+     "positive"
+    ],
+    "verified_selected": 0
+   }
+  ]
+ },
+ "digest": "5da7534bcaa4d30c93f4eae703b3d479e2e7bca13fa4849821260b5be1d0daf0"
+}

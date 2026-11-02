@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pathology-ai.local/contracts/imaging/v1/slice-request.schema.json",
+  "title": "Pathology AI Imaging API v1 - volumetric slice request",
+  "description": "One slice of a 3D/4D volume addressed by voxel axis and index. Never expressed in WSI pixel coordinates.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "image_id", "frame", "axis", "index", "time_index", "encoding"],
+  "properties": {
+    "schema_version": {"const": "pathology-ai.imaging/1.0"},
+    "image_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"},
+    "frame": {"const": "volume_voxel_index"},
+    "axis": {"enum": [0, 1, 2]},
+    "index": {"type": "integer", "minimum": 0},
+    "time_index": {"type": ["integer", "null"], "minimum": 0},
+    "encoding": {"enum": ["png", "raw"]}
+  }
+}

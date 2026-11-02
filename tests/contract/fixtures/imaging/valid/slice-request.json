@@ -1,0 +1,1 @@
+{"schema": "slice-request", "document": {"schema_version": "pathology-ai.imaging/1.0", "image_id": "syn-fixture-ct-0001", "frame": "volume_voxel_index", "axis": 2, "index": 10, "time_index": null, "encoding": "png"}}

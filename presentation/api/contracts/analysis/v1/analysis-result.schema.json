@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pathology-ai.local/contracts/analysis/v1/analysis-result.schema.json",
+  "title": "Pathology AI Analysis API v1 - analysis result",
+  "description": "Typed outputs (not forced into one classification schema), spatial evidence with explicit coordinate frame and semantics, scientific capability status and execution provenance, all bound to one canonical image_id.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "research_use_only", "prediction", "provenance"],
+  "properties": {
+    "schema_version": {"const": "pathology-ai.analysis/1.0"},
+    "research_use_only": {"type": "boolean"},
+    "prediction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prediction_id", "image_id", "task", "models", "capability_status", "usage_mode", "outputs", "evidence"],
+      "properties": {
+        "prediction_id": {"$ref": "#/$defs/id"},
+        "image_id": {"$ref": "#/$defs/id"},
+        "task": {"$ref": "#/$defs/versioned_ref"},
+        "models": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/versioned_ref"}},
+        "capability_status": {"enum": ["VALIDATED", "SUPPORTED_UNVALIDATED"]},
+        "usage_mode": {"enum": ["validated_scope", "research_unvalidated"]},
+        "outputs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/output"}},
+        "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}}
+      },
+      "allOf": [
+        {"if": {"properties": {"capability_status": {"const": "VALIDATED"}}}, "then": {"properties": {"usage_mode": {"const": "validated_scope"}}}, "else": {"properties": {"usage_mode": {"const": "research_unvalidated"}}}}
+      ]
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "fingerprint", "pipeline", "dataset", "models", "preprocessing", "components", "environment", "seed", "started_at", "finished_at"],
+      "properties": {
+        "run_id": {"$ref": "#/$defs/id"},
+        "fingerprint": {"type": "string", "pattern": "^pai-fp-[0-9a-f]{32}$"},
+        "pipeline": {"$ref": "#/$defs/versioned_ref"},
+        "dataset": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/versioned_ref"}]},
+        "models": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["slot", "id", "version", "artifact_checksum"],
+            "properties": {"slot": {"type": "string"}, "id": {"type": "string"}, "version": {"type": "string"}, "artifact_checksum": {"type": "string"}}
+          }
+        },
+        "preprocessing": {
+          "oneOf": [
+            {"type": "null"},
+            {"type": "object", "additionalProperties": false, "required": ["id", "version", "digest"], "properties": {"id": {"type": "string"}, "version": {"type": "string"}, "digest": {"type": "string"}}}
+          ]
+        },
+        "components": {
+          "type": "array",
+          "items": {"type": "object", "additionalProperties": false, "required": ["role", "name", "version"], "properties": {"role": {"type": "string"}, "name": {"type": "string"}, "version": {"type": "string"}}}
+        },
+        "environment": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["python_version", "platform", "packages"],
+          "properties": {"python_version": {"type": "string"}, "platform": {"type": "string"}, "packages": {"type": "object", "additionalProperties": {"type": "string"}}}
+        },
+        "seed": {"type": "integer"},
+        "started_at": {"type": "string"},
+        "finished_at": {"type": "string"}
+      }
+    }
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"},
+    "versioned_ref": {"type": "object", "additionalProperties": false, "required": ["id", "version"], "properties": {"id": {"type": "string"}, "version": {"type": "string"}}},
+    "level0_rect": {
+      "type": "object", "additionalProperties": false, "required": ["type", "frame", "x", "y", "width", "height"],
+      "properties": {"type": {"const": "rectangle"}, "frame": {"const": "wsi_level0_pixel"}, "x": {"type": "number", "minimum": 0}, "y": {"type": "number", "minimum": 0}, "width": {"type": "number", "exclusiveMinimum": 0}, "height": {"type": "number", "exclusiveMinimum": 0}}
+    },
+    "polygon": {
+      "type": "object", "additionalProperties": false, "required": ["type", "frame", "points"],
+      "properties": {"type": {"const": "polygon"}, "frame": {"const": "wsi_level0_pixel"}, "points": {"type": "array", "minItems": 3, "items": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2}}}
+    },
+    "point": {
+      "type": "object", "additionalProperties": false, "required": ["type", "frame", "x", "y"],
+      "properties": {"type": {"const": "point"}, "frame": {"const": "wsi_level0_pixel"}, "x": {"type": "number"}, "y": {"type": "number"}}
+    },
+    "voxel_box": {
+      "type": "object", "additionalProperties": false, "required": ["type", "frame", "start", "stop"],
+      "properties": {
+        "type": {"const": "voxel_box"}, "frame": {"const": "volume_voxel_index"},
+        "start": {"type": "array", "items": {"type": "integer", "minimum": 0}, "minItems": 3, "maxItems": 3},
+        "stop": {"type": "array", "items": {"type": "integer", "minimum": 1}, "minItems": 3, "maxItems": 3}
+      }
+    },
+    "geometry_2d": {"oneOf": [{"$ref": "#/$defs/level0_rect"}, {"$ref": "#/$defs/polygon"}, {"$ref": "#/$defs/point"}]},
+    "geometry": {"oneOf": [{"$ref": "#/$defs/level0_rect"}, {"$ref": "#/$defs/polygon"}, {"$ref": "#/$defs/point"}, {"$ref": "#/$defs/voxel_box"}]},
+    "label_map": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["value", "label"], "properties": {"value": {"type": "integer"}, "label": {"type": "string"}}}},
+    "output": {
+      "oneOf": [
+        {
+          "type": "object", "additionalProperties": false, "required": ["kind", "label", "scores", "scores_are_calibrated_probabilities"],
+          "properties": {"kind": {"const": "image_classification"}, "label": {"type": "string"}, "scores": {"type": "object", "additionalProperties": {"type": "number"}, "minProperties": 2}, "scores_are_calibrated_probabilities": {"type": "boolean"}}
+        },
+        {
+          "type": "object", "additionalProperties": false, "required": ["kind", "name", "value", "unit"],
+          "properties": {"kind": {"const": "continuous_score"}, "name": {"type": "string"}, "value": {"type": "number"}, "unit": {"type": ["string", "null"]}}
+        },
+        {
+          "type": "object", "additionalProperties": false, "required": ["kind", "geometry", "label", "score"],
+          "properties": {"kind": {"const": "region_prediction"}, "geometry": {"$ref": "#/$defs/geometry_2d"}, "label": {"type": "string"}, "score": {"type": ["number", "null"]}}
+        },
+        {
+          "type": "object", "additionalProperties": false, "required": ["kind", "geometry", "label", "confidence"],
+          "properties": {"kind": {"const": "detection"}, "geometry": {"$ref": "#/$defs/geometry_2d"}, "label": {"type": "string"}, "confidence": {"type": "number"}}
+        },
+        {
+          "type": "object", "additionalProperties": false, "required": ["kind", "mask_artifact", "label_map", "frame", "level", "downsample"],
+          "properties": {"kind": {"const": "segmentation"}, "mask_artifact": {"$ref": "#/$defs/id"}, "label_map": {"$ref": "#/$defs/label_map"}, "frame": {"const": "wsi_level_pixel"}, "level": {"type": "integer", "minimum": 0}, "downsample": {"type": "number", "minimum": 1}}
+        },
+        {
+          "type": "object", "additionalProperties": false, "required": ["kind", "mask_artifact", "label_map", "frame", "shape", "spacing_mm"],
+          "properties": {"kind": {"const": "volumetric_segmentation"}, "mask_artifact": {"$ref": "#/$defs/id"}, "label_map": {"$ref": "#/$defs/label_map"}, "frame": {"const": "volume_voxel_index"}, "shape": {"type": "array", "items": {"type": "integer", "minimum": 1}, "minItems": 3, "maxItems": 3}, "spacing_mm": {"oneOf": [{"type": "null"}, {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3}]}}
+        }
+      ]
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_id", "image_id", "semantics", "geometry", "value", "value_is_probability", "rank", "producer", "localization_validation"],
+      "properties": {
+        "evidence_id": {"$ref": "#/$defs/id"},
+        "image_id": {"$ref": "#/$defs/id"},
+        "semantics": {"enum": ["attention_weight", "saliency", "localized_probability", "detection_confidence", "segmentation_membership"]},
+        "geometry": {"$ref": "#/$defs/geometry"},
+        "value": {"type": ["number", "null"]},
+        "value_is_probability": {"type": "boolean"},
+        "rank": {"type": ["integer", "null"], "minimum": 1},
+        "producer": {"$ref": "#/$defs/versioned_ref"},
+        "localization_validation": {"type": ["string", "null"]}
+      },
+      "allOf": [
+        {"if": {"properties": {"semantics": {"enum": ["attention_weight", "saliency"]}}}, "then": {"properties": {"value_is_probability": {"const": false}}}},
+        {"if": {"properties": {"semantics": {"const": "localized_probability"}}}, "then": {"properties": {"localization_validation": {"type": "string"}, "value": {"type": "number", "minimum": 0, "maximum": 1}}}}
+      ]
+    }
+  }
+}

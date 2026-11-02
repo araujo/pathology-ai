@@ -1,0 +1,259 @@
+# SurGen MSI/dMMR cohort definition (SPEC-008 Phase B). Configuration only: the generic
+# reconciliation code knows nothing about SurGen.
+#
+# Sources are bound at run time to named roots, never by path in a manifest:
+#   upstream = a clone of github.com/CraigMyles/SurGen-Dataset at commit
+#              e56ca8cd4d2768ecb0eccd4e8cb269f7e460de4e (label files unchanged since 561de1d)
+#   legacy   = the legacy pipeline checkout whose data/metadata holds surgen_manifest.csv
+# Every file is pinned by SHA-256; a different byte fails with COHORT_SOURCE_INTEGRITY.
+#
+# Owner decisions: .claude/reports/008-cohort-discovery.md §10. Phase B approval recorded below.
+#
+# Versions. Manifest v1 (manifests/v1, digest 854f009f...5a3c) was built from this file with
+# version "1" and D-7 pending (file SHA-256 2871ef23...379d). D-7 was approved afterwards
+# (2026-11-02), and the decision ledger is part of a manifest, so this file now declares version
+# "2". Manifest v2 has NOT been built: it will be built explicitly into manifests/v2, never over
+# v1. Slide membership, labels and the split are unchanged by D-7, which gates only extraction.
+# Manifest v1 is reproduced from this file by reverting exactly that delta (version "1", D-7
+# pending): tests/integration/test_surgen_cohort_manifest.py.
+# D-9 (pilot infrastructure: EBI HTTPS, local Mac, MPS) was approved later the same day. Version
+# "2" is kept: no v2 manifest exists yet, so no document named surgen-msi@2 can disagree with
+# this ledger. The v1 reproduction now reverts both approvals (D-7 and D-9 back to pending).
+# Once manifests/v2 is built, any further ledger change requires version "3".
+schema: pathology-ai.cohort-config/1
+cohort_id: surgen-msi
+version: "2"
+
+target:
+  name: msi_dmmr
+  classes: [negative, positive]
+  positive_class: positive
+  # D-3: one combined endpoint. Each record keeps the target its authoritative source names:
+  # SR386 files encode MMR protein loss (upstream task MMR_LOSS), SR1482 files encode
+  # MSI/dMMR (upstream task MMR_MSI). The combined upstream files call the union MMR_MSI.
+  accepted_source_targets: [MMR_LOSS, MMR_MSI]
+  decision: D-3
+
+identity:
+  # Accepts unpadded case numbers (SR386 "T1"), padded ones ("T001"), with or without the slide
+  # suffix, and the .czi file name. Legacy positional "slide_<i>" values never match.
+  pattern: '^(?P<cohort>SR386|SR1482)_40X_HE_T(?P<case>\d+)(?:_(?P<slide>\d{2}))?(?:\.czi)?$'
+  integer_fields: [case]
+  cohort_field: cohort
+  slide_field: slide
+  group_fields: [cohort, case]
+  slide_id: '{cohort}_40X_HE_T{case:03d}_{slide}'
+  # D-4: cohort-qualified case number (276 case numbers occur in both sub-cohorts).
+  group_id: 'surgen:{cohort}:T{case:03d}'
+  decision: D-4
+
+label_authority:
+  decision: D-1
+
+slides:
+  # D-2: only the first slide of a case enters the primary analysis; SR1482 _02 slides are
+  # excluded (no source labels them).
+  include_indices: ["01"]
+  decision: D-2
+
+split:
+  # D-5: the published train/validate/test membership is imported unchanged, never regenerated.
+  # Its test partition has been used for historical evaluation and EDA: a reused benchmark.
+  strategy: external@1
+  test_role: reused_benchmark
+  # D-6: the Phase C extraction pilot draws only from these partitions.
+  pilot_partitions: [train, validation]
+  decisions: [D-5, D-6]
+
+partition_names: {train: train, validate: validation, test: test}
+
+sources:
+  # ---- roster: every WSI of the cohort (upstream CLAM segmentation lists, 427 + 593 rows)
+  - id: upstream-roster-sr386
+    role: roster
+    root: upstream
+    provenance: CraigMyles/SurGen-Dataset@e56ca8c reproducibility/dataset_csv
+    id_column: slide_id
+    files:
+      - path: reproducibility/dataset_csv/segment_params_SR386.csv
+        sha256: c4b9657437b13ec57aaa130485abf56d8d74f1b242938df04d063a0c13e76d8b
+  - id: upstream-roster-sr1482
+    role: roster
+    root: upstream
+    provenance: CraigMyles/SurGen-Dataset@e56ca8c reproducibility/dataset_csv
+    id_column: slide_id
+    files:
+      - path: reproducibility/dataset_csv/segment_params_SR1482.csv
+        sha256: 7bd751cc40223796bb18ae3731521fce60e7e382edd6efeb09b53f9f26ef35b7
+
+  # ---- D-1 authority: the published per-sub-cohort split CSVs. Their slide_id column is a
+  # positional index in validate/test and is never read.
+  - id: upstream-sr386-msi
+    role: authority
+    root: upstream
+    provenance: CraigMyles/SurGen-Dataset@e56ca8c reproducibility/dataset_csv (upstream task MMR_LOSS)
+    source_target: MMR_LOSS
+    id_column: case_id
+    label_column: label
+    vocabulary: {"0": negative, "1": positive}
+    files:
+      - path: reproducibility/dataset_csv/SR386_msi_train.csv
+        sha256: 634aa4f5e8fa9dfd80847d1839cf0740549f590772a5c31bbeb957ac7a78e168
+        partition: train
+      - path: reproducibility/dataset_csv/SR386_msi_validate.csv
+        sha256: c63c3638f85cb2bcf5ef9d0e364f452abe630db4b965c389ddce855df2d1bbb2
+        partition: validate
+      - path: reproducibility/dataset_csv/SR386_msi_test.csv
+        sha256: 3357089409034fdfd3b84d0452dcf3917908938769729e406d814a7513046c0b
+        partition: test
+  - id: upstream-sr1482-msi
+    role: authority
+    root: upstream
+    provenance: CraigMyles/SurGen-Dataset@e56ca8c reproducibility/dataset_csv (upstream task MMR_MSI)
+    source_target: MMR_MSI
+    id_column: case_id
+    label_column: label
+    vocabulary: {"0": negative, "1": positive}
+    files:
+      - path: reproducibility/dataset_csv/SR1482_train_msi.csv
+        sha256: a64c6a18ba5bf3d8258e3b74a0ef08e78da458271830f53cffe1e3226ca531d1
+        partition: train
+      - path: reproducibility/dataset_csv/SR1482_validate_msi.csv
+        sha256: f1f71a3a268a35d6e33c74b23d30e3141cdaa7f1d5b412b6decfe9d066066b02
+        partition: validate
+      - path: reproducibility/dataset_csv/SR1482_test_msi.csv
+        sha256: 4b88a1fce560df85baeabb64bc86c03c9f243d5a632ed2eb09be68292e76b78c
+        partition: test
+
+  # ---- corroborating copies: must agree, otherwise the slide is excluded as a conflict.
+  - id: upstream-surgen-msi
+    role: corroborating
+    root: upstream
+    provenance: CraigMyles/SurGen-Dataset@e56ca8c reproducibility/dataset_csv (combined, upstream task MMR_MSI)
+    source_target: MMR_MSI
+    id_column: case_id
+    label_column: label
+    vocabulary: {"0": negative, "1": positive}
+    files:
+      - path: reproducibility/dataset_csv/SurGen_msi_train.csv
+        sha256: 6656c4663f69c6e28bd7b4e3cb8ad627eb869209af6789a6b8932b6d3780afe5
+        partition: train
+      - path: reproducibility/dataset_csv/SurGen_msi_validate.csv
+        sha256: 8605459457096ca32ed3c0eaa7587819f070effb39d72435eae46a12ef515dd8
+        partition: validate
+      - path: reproducibility/dataset_csv/SurGen_msi_test.csv
+        sha256: 97740d89417b6e6a58c84c064f2db198a79edf30b3b9b33d0112bf8e1d30cc19
+        partition: test
+  - id: legacy-manifest
+    role: corroborating
+    root: legacy
+    provenance: legacy join table data/metadata/surgen_manifest.csv (derived from the combined upstream files)
+    source_target: MMR_MSI
+    id_column: czi_filename
+    label_column: label
+    partition_column: split
+    vocabulary: {"0": negative, "1": positive}
+    files:
+      - path: data/metadata/surgen_manifest.csv
+        sha256: 9b945ddbdecc2eee9a90f18172b553d675288e0fd1dd77145dd40fcd34939b8c
+
+decisions:
+  - id: D-0
+    summary: Close the SPEC-007 MSI label contradiction as a cross-target (MSI vs KRAS) comparison error.
+    status: approved
+    gates: [reconciliation]
+    approver: Gustavo Medeiros de Araujo (repository owner)
+    approved_on: "2026-11-02"
+    reference: PROMPT-008B; owner confirmation in the Phase B Claude Code session ("Approve all")
+  - id: D-1
+    summary: The published upstream MSI CSVs, pinned by SHA-256, are the study label authority.
+    status: approved
+    gates: [reconciliation]
+    approver: Gustavo Medeiros de Araujo (repository owner)
+    approved_on: "2026-11-02"
+    reference: PROMPT-008B; owner confirmation in the Phase B Claude Code session ("Approve all")
+  - id: D-2
+    summary: Exclude SR1482 _02 slides from the primary analysis.
+    status: approved
+    gates: [reconciliation]
+    approver: Gustavo Medeiros de Araujo (repository owner)
+    approved_on: "2026-11-02"
+    reference: PROMPT-008B; owner confirmation in the Phase B Claude Code session ("Approve all")
+  - id: D-3
+    summary: Use the published combined MSI/dMMR endpoint, preserving each source cohort's label semantics.
+    status: approved
+    gates: [reconciliation]
+    approver: Gustavo Medeiros de Araujo (repository owner)
+    approved_on: "2026-11-02"
+    reference: PROMPT-008B; owner confirmation in the Phase B Claude Code session ("Approve all")
+  - id: D-4
+    summary: The cohort-qualified case (T-number) is the patient/group key.
+    status: approved
+    gates: [reconciliation]
+    approver: Gustavo Medeiros de Araujo (repository owner)
+    approved_on: "2026-11-02"
+    reference: PROMPT-008B; owner confirmation in the Phase B Claude Code session ("Approve all")
+  - id: D-5
+    summary: Preserve the upstream train/validation/test split; report the test partition as a reused benchmark.
+    status: approved
+    gates: [reconciliation, evaluation]
+    approver: Gustavo Medeiros de Araujo (repository owner)
+    approved_on: "2026-11-02"
+    reference: PROMPT-008B; owner confirmation in the Phase B Claude Code session ("Approve all")
+  - id: D-6
+    summary: Reserve train/validation slides for the Phase C extraction pilot (no test slides).
+    status: approved
+    gates: [reconciliation, pilot]
+    approver: Gustavo Medeiros de Araujo (repository owner)
+    approved_on: "2026-11-02"
+    reference: PROMPT-008B; owner confirmation in the Phase B Claude Code session ("Approve all")
+  - id: D-7
+    summary: >-
+      Extraction scale 0.5 um/px +-15% (a stored pyramid level within tolerance, no resampling)
+      with the existing uni-official@1 preprocessing profile and 224x224 RGB model input, as
+      bound by pipeline wsi-patch-embedding-uni@1.0.0 (plan.target_spacing_um 0.5,
+      embed.model_spacing_um 0.5, tolerance 0.15). The 1.0 um/px alternative is not approved.
+    status: approved
+    gates: [extraction]
+    approver: Gustavo Medeiros de Araujo (repository owner)
+    approved_on: "2026-11-02"
+    reference: Owner instruction after the PROMPT-008C1 review (Phase C1 readiness report §1)
+  - id: D-8
+    summary: A separate legacy-embedding comparability arm is documented; no embeddings are imported in Phase B.
+    status: approved
+    gates: [comparability]
+    approver: Gustavo Medeiros de Araujo (repository owner)
+    approved_on: "2026-11-02"
+    reference: PROMPT-008B; owner confirmation in the Phase B Claude Code session ("Approve all")
+  # D-9 approves the route and the compute environment for the Phase C2 pilot only. It is a
+  # planning decision: it does not authorize downloading WSIs, running UNI, training, or
+  # starting Phase C2. Phase C2 execution needs D-10 and a separate, explicit owner
+  # authorization (.claude/reports/008-phase-c2-execution-plan.md, gates G1-G12).
+  # Storage locations are operational: they are bound at run time and never enter this file.
+  - id: D-9
+    summary: >-
+      Phase C2 pilot infrastructure: acquire the five pending pilot WSIs by EBI HTTPS (BioStudies
+      S-BIAD1285); compute on the local Mac with Apple MPS; scope = the eight slides of pilot
+      selection pai-pilot-5da7534b; embedding protocol uni-official@1, 0.5 um/px +-15%, RGB
+      224x224, fp32, batch size 16. Planning and infrastructure preparation only: no WSI
+      download, UNI execution, MIL training or Phase C2 execution is authorized by this
+      decision. Phase D compute and storage are not covered.
+    status: approved
+    gates: [extraction]
+    approver: Gustavo Medeiros de Araujo (repository owner)
+    approved_on: "2026-11-02"
+    reference: >-
+      PROMPT-008D9 (owner decision D-9, planning-only scope); evidence in
+      .claude/reports/008-d9-infrastructure-readiness.md
+  - id: D-10
+    summary: Confirm UNI terms cover this study and record the SurGen data terms.
+    status: pending
+    gates: [pilot, extraction]
+
+limitations:
+  - Labels are traceable to the published split CSVs only; the clinical tables behind them were not available.
+  - SR386 labels encode MMR protein loss and SR1482 labels encode MSI/dMMR; the combined endpoint mixes two assays.
+  - Agreement between sources shows consistent copies of one publication, not clinical correctness.
+  - Eligible records are provisional until every WSI is present, hashed and checked for duplicate content.
+  - The test partition was used for historical evaluation and EDA; it is a reused benchmark, not a fresh hold-out.
+  - That SR386 and SR1482 case numbers denote disjoint patients is inferred, not verifiable without clinical identifiers.

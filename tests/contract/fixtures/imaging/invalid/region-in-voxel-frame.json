@@ -1,0 +1,1 @@
+{"schema": "region-request", "reason": "WSI region addressed in voxel frame", "document": {"schema_version": "pathology-ai.imaging/1.0", "image_id": "syn-fixture-wsi-0001", "frame": "volume_voxel_index", "level": 0, "x": 0, "y": 0, "width": 10, "height": 10, "encoding": "png"}}

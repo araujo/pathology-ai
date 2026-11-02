@@ -1,0 +1,16 @@
+# SYNTHETIC technical demonstration. Not a lung cancer model; no clinical meaning.
+project_id: prj-synthetic-lung-slide-endpoint
+namespace: patologia/cancer/pulmao
+display_name: Lung slide endpoint (synthetic demonstration)
+dataset: {dataset_id: synthetic-lung-slides, version: "0.1.0"}
+task: {task_id: synthetic-lung-binary-endpoint, version: "1.0.0"}
+pipeline: {pipeline_id: wsi-patch-embed-aggregate, version: "1.0.0"}
+models:
+  encoder: {model_id: synthetic-patch-encoder, version: "1.0.0"}
+  aggregator: {model_id: synthetic-aggregator-lung, version: "1.0.0"}
+preprocessing: {contract_id: synthetic-wsi-patch32-mpp0.5, version: "1.0.0"}
+evaluation_protocol: none (synthetic architecture demonstration)
+intended_use: technical_demonstration
+research_use_acknowledged: true
+target_context: {tissue: lung, disease: cancer}
+seed: 11

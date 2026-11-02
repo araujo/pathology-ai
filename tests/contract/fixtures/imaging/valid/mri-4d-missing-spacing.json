@@ -1,0 +1,12 @@
+{"schema": "image-descriptor", "document": {
+  "schema_version": "pathology-ai.imaging/1.0",
+  "image_id": "syn-fixture-mr-0001",
+  "modality": {"code": "mri", "spatial_kind": "volume_4d"},
+  "format": "nifti",
+  "channel_order": null,
+  "source_checksum": null,
+  "context": {"tissue": null, "disease": null},
+  "geometry": {"type": "volume_4d", "frame": "volume_voxel_index", "physical_frame": "patient_lps_mm",
+    "shape": [64, 64, 32], "spacing_mm": null, "origin_mm": null, "direction": null, "time_points": 10, "series_uid": null},
+  "access": {"regions": false, "thumbnail": false, "volume": false, "slices": false}
+}}

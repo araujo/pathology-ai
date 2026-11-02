@@ -1,0 +1,14 @@
+{
+ "schema": "analysis-job",
+ "reason": "COMPLETED job must reference a prediction",
+ "document": {
+  "schema_version": "pathology-ai.analysis/1.0",
+  "job_id": "j",
+  "project_id": "p",
+  "image_id": "i",
+  "status": "COMPLETED",
+  "stage": null,
+  "prediction_id": null,
+  "error": null
+ }
+}

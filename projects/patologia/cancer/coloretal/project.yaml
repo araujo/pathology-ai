@@ -1,0 +1,17 @@
+# SYNTHETIC technical demonstration. Not a colorectal cancer model; no clinical meaning.
+# Shares the exact pipeline definition used by patologia/cancer/pulmao.
+project_id: prj-synthetic-colorectal-slide-endpoint
+namespace: patologia/cancer/coloretal
+display_name: Colorectal slide endpoint (synthetic demonstration)
+dataset: {dataset_id: synthetic-colorectal-slides, version: "0.1.0"}
+task: {task_id: synthetic-colorectal-binary-endpoint, version: "1.0.0"}
+pipeline: {pipeline_id: wsi-patch-embed-aggregate, version: "1.0.0"}
+models:
+  encoder: {model_id: synthetic-patch-encoder, version: "1.0.0"}
+  aggregator: {model_id: synthetic-aggregator-colorectal, version: "1.0.0"}
+preprocessing: {contract_id: synthetic-wsi-patch32-mpp0.5, version: "1.0.0"}
+evaluation_protocol: none (synthetic architecture demonstration)
+intended_use: technical_demonstration
+research_use_acknowledged: true
+target_context: {tissue: colorectum, disease: cancer}
+seed: 23

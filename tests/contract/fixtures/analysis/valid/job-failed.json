@@ -1,0 +1,1 @@
+{"schema": "analysis-job", "document": {"schema_version": "pathology-ai.analysis/1.0", "job_id": "pai-job-0001", "project_id": "prj-x", "image_id": "img-1", "status": "FAILED", "stage": null, "prediction_id": null, "error": {"code": "UNVALIDATED_USE_NOT_ACKNOWLEDGED", "message": "explicit research-use acknowledgement required"}}}

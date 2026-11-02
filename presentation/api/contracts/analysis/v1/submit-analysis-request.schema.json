@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pathology-ai.local/contracts/analysis/v1/submit-analysis-request.schema.json",
+  "title": "Pathology AI Analysis API v1 - submit analysis",
+  "description": "Associates a job with a project configuration and a canonical Imaging API image_id. ML implementation details (patch size, encoder, checkpoint) are resolved from the project, never supplied by the caller.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "project_id", "image_id", "research_use_acknowledged"],
+  "properties": {
+    "schema_version": {"const": "pathology-ai.analysis/1.0"},
+    "project_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"},
+    "image_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"},
+    "research_use_acknowledged": {"type": "boolean"}
+  }
+}

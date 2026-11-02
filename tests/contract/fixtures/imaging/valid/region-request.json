@@ -1,0 +1,1 @@
+{"schema": "region-request", "document": {"schema_version": "pathology-ai.imaging/1.0", "image_id": "syn-fixture-wsi-0001", "frame": "wsi_level_pixel", "level": 1, "x": 0, "y": 0, "width": 256, "height": 256, "encoding": "png"}}

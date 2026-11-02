@@ -1,0 +1,8 @@
+{"schema": "image-descriptor", "reason": "2D modality with 3D geometry", "document": {
+  "schema_version": "pathology-ai.imaging/1.0", "image_id": "bad-0001",
+  "modality": {"code": "wsi", "spatial_kind": "pyramidal_2d"}, "format": "dicom", "channel_order": "rgb",
+  "source_checksum": null, "context": {"tissue": null, "disease": null},
+  "geometry": {"type": "volume_3d", "frame": "volume_voxel_index", "physical_frame": "patient_lps_mm",
+    "shape": [4, 4, 4], "spacing_mm": null, "origin_mm": null, "direction": null, "time_points": null, "series_uid": null},
+  "access": {"regions": false, "thumbnail": false, "volume": false, "slices": false}
+}}

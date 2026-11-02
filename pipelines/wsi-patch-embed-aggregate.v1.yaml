@@ -1,0 +1,52 @@
+# Reusable 2D pyramidal template: tissue -> patches -> encoder -> bag aggregator.
+# Disease-, dataset- and model-agnostic: projects bind the encoder/aggregator slots.
+schema_version: pathology-ai.pipeline/1
+pipeline_id: wsi-patch-embed-aggregate
+version: "1.0.0"
+description: Patch encoder followed by a bag-level (MIL-style) aggregator.
+inputs:
+  - {name: image, kind: image.pyramidal_2d, spatial_kind: pyramidal_2d}
+stages:
+  - id: tissue
+    operation: {name: tissue.threshold, version: "1"}
+    inputs:
+      - {name: image, kind: image.pyramidal_2d, spatial_kind: pyramidal_2d}
+    outputs:
+      - {name: mask, kind: mask.tissue_2d}
+    config: {max_mean_intensity: 220}
+    resources: {memory_mb: 256}
+  - id: patches
+    operation: {name: patch.grid, version: "1"}
+    requires_preprocessing: true
+    inputs:
+      - {name: image, kind: image.pyramidal_2d, spatial_kind: pyramidal_2d}
+      - {name: mask, kind: mask.tissue_2d}
+    outputs:
+      - {name: patches, kind: patch_set}
+    config: {min_tissue_fraction: 0.5, max_patches: 48}
+    resources: {memory_mb: 512}
+  - id: encode
+    operation: {name: model.invoke, version: "1"}
+    model_slot: encoder
+    inputs:
+      - {name: patches, kind: patch_set}
+    outputs:
+      - {name: embeddings, kind: embedding_bag}
+    resources: {memory_mb: 512}
+  - id: aggregate
+    operation: {name: model.invoke, version: "1"}
+    model_slot: aggregator
+    inputs:
+      - {name: embeddings, kind: embedding_bag}
+    outputs:
+      - {name: prediction, kind: prediction.classification}
+    config: {evidence_top_k: 5}
+    resources: {memory_mb: 256}
+edges:
+  - [$input.image, tissue.image]
+  - [$input.image, patches.image]
+  - [tissue.mask, patches.mask]
+  - [patches.patches, encode.patches]
+  - [encode.embeddings, aggregate.embeddings]
+outputs:
+  prediction: aggregate.prediction

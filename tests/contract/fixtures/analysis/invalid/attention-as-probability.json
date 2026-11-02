@@ -1,0 +1,106 @@
+{
+ "schema": "analysis-result",
+ "document": {
+  "schema_version": "pathology-ai.analysis/1.0",
+  "research_use_only": true,
+  "prediction": {
+   "prediction_id": "pai-pred-fixture",
+   "image_id": "syn-fixture-ct-0001",
+   "task": {
+    "id": "synthetic-volume-structure-segmentation",
+    "version": "1.0.0"
+   },
+   "models": [
+    {
+     "id": "synthetic-volume-segmenter",
+     "version": "1.0.0"
+    }
+   ],
+   "capability_status": "SUPPORTED_UNVALIDATED",
+   "usage_mode": "research_unvalidated",
+   "outputs": [
+    {
+     "kind": "volumetric_segmentation",
+     "mask_artifact": "pai-art-fixture",
+     "label_map": [
+      {
+       "value": 0,
+       "label": "background"
+      },
+      {
+       "value": 1,
+       "label": "synthetic_structure"
+      }
+     ],
+     "frame": "volume_voxel_index",
+     "shape": [
+      128,
+      128,
+      64
+     ],
+     "spacing_mm": [
+      0.8,
+      0.8,
+      2.5
+     ]
+    },
+    {
+     "kind": "continuous_score",
+     "name": "synthetic_volume_ml",
+     "value": 12.5,
+     "unit": "ml"
+    }
+   ],
+   "evidence": [
+    {
+     "evidence_id": "pai-ev-fixture",
+     "image_id": "syn-fixture-ct-0001",
+     "semantics": "attention_weight",
+     "geometry": {
+      "type": "voxel_box",
+      "frame": "volume_voxel_index",
+      "start": [
+       0,
+       0,
+       0
+      ],
+      "stop": [
+       10,
+       10,
+       5
+      ]
+     },
+     "value": 0.4,
+     "value_is_probability": true,
+     "rank": null,
+     "producer": {
+      "id": "synthetic-volume-segmenter",
+      "version": "1.0.0"
+     },
+     "localization_validation": null
+    }
+   ]
+  },
+  "provenance": {
+   "run_id": "pai-run-fixture",
+   "fingerprint": "pai-fp-00000000000000000000000000000000",
+   "pipeline": {
+    "id": "volume-segmentation-3d",
+    "version": "1.0.0"
+   },
+   "dataset": null,
+   "models": [],
+   "preprocessing": null,
+   "components": [],
+   "environment": {
+    "python_version": "3.12.0",
+    "platform": "x",
+    "packages": {}
+   },
+   "seed": 0,
+   "started_at": "t0",
+   "finished_at": "t1"
+  }
+ },
+ "reason": "attention evidence presented as probability"
+}

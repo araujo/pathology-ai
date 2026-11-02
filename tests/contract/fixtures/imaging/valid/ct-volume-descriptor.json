@@ -1,0 +1,13 @@
+{"schema": "image-descriptor", "document": {
+  "schema_version": "pathology-ai.imaging/1.0",
+  "image_id": "syn-fixture-ct-0001",
+  "modality": {"code": "ct", "spatial_kind": "volume_3d"},
+  "format": "dicom",
+  "channel_order": "grayscale",
+  "source_checksum": "sha256:0000",
+  "context": {"tissue": null, "disease": null},
+  "geometry": {"type": "volume_3d", "frame": "volume_voxel_index", "physical_frame": "patient_lps_mm",
+    "shape": [128, 128, 64], "spacing_mm": [0.8, 0.8, 2.5], "origin_mm": [-51.2, -51.2, 0.0],
+    "direction": [1, 0, 0, 0, 1, 0, 0, 0, 1], "time_points": null, "series_uid": null},
+  "access": {"regions": false, "thumbnail": false, "volume": false, "slices": false}
+}}

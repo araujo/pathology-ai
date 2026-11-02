@@ -1,0 +1,11 @@
+{
+ "schema": "submit-analysis-request",
+ "reason": "ML implementation details are not caller-supplied",
+ "document": {
+  "schema_version": "pathology-ai.analysis/1.0",
+  "project_id": "p",
+  "image_id": "i",
+  "research_use_acknowledged": true,
+  "patch_size": 224
+ }
+}

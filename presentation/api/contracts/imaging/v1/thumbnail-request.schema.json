@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pathology-ai.local/contracts/imaging/v1/thumbnail-request.schema.json",
+  "title": "Pathology AI Imaging API v1 - thumbnail request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "image_id", "max_size", "encoding"],
+  "properties": {
+    "schema_version": {"const": "pathology-ai.imaging/1.0"},
+    "image_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"},
+    "max_size": {"type": "integer", "minimum": 16, "maximum": 4096},
+    "encoding": {"enum": ["png", "jpeg"]}
+  }
+}

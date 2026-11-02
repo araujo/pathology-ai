@@ -1,0 +1,109 @@
+# Real-WSI patch embedding (SPEC-005): candidate tissue -> deterministic patch plan -> manifest
+# without pixels -> lazy, bounded, resumable embedding into a durable store.
+# Reader-neutral: one definition serves every backend that passes the capability gate.
+# Resolution: the plan reads an explicitly selected stored level (here: the level within 15% of
+# 0.5 µm/px); nothing is resampled (`resample: none`). Channel conversions the encoder may use
+# are declared explicitly; anything else fails with CHANNEL_ORDER_MISMATCH.
+# The reference encoder is a synthetic NumPy fixture: its embeddings have no medical meaning.
+# Sentinels as in wsi-tissue-patch-extraction. Override per run (stage, key, value).
+schema_version: pathology-ai.pipeline/1
+pipeline_id: wsi-patch-embedding
+version: "1.0.0"
+description: Candidate tissue, patch planning and streaming patch embedding into a durable store.
+inputs:
+  - {name: image, kind: image.pyramidal_2d, spatial_kind: pyramidal_2d}
+stages:
+  - id: tissue
+    operation: {name: tissue.detect, version: "1"}
+    inputs:
+      - {name: image, kind: image.pyramidal_2d, spatial_kind: pyramidal_2d}
+    outputs:
+      - {name: mask, kind: mask.tissue_2d}
+    config:
+      detector: saturation_otsu
+      validity_policy: require_reported
+      mask_level: -1
+      max_mask_pixels: 1048576
+      max_decoded_pixels: 67108864
+      tile_px: 2048
+      min_threshold: 8
+      open_radius: 0
+      close_radius: 0
+    resources: {memory_mb: 512}
+  - id: plan
+    operation: {name: patch.plan, version: "1"}
+    inputs:
+      - {name: image, kind: image.pyramidal_2d, spatial_kind: pyramidal_2d}
+      - {name: mask, kind: mask.tissue_2d}
+    outputs:
+      - {name: plan, kind: patch_plan}
+    config:
+      units: pixels
+      width: 256
+      height: 256
+      stride_x: 0.0
+      stride_y: 0.0
+      level: -1
+      target_spacing_um: 0.5
+      spacing_tolerance: 0.15
+      grid_origin_x: 0
+      grid_origin_y: 0
+      edge_policy: inside_only
+      min_tissue_fraction: 0.5
+      min_acquired_fraction: 0.9
+      validity_policy: require_reported
+      selection: fail_closed
+      max_patches: 100000
+      max_candidates: 1000000
+    resources: {memory_mb: 512}
+  - id: extract
+    operation: {name: patch.extract, version: "1"}
+    inputs:
+      - {name: image, kind: image.pyramidal_2d, spatial_kind: pyramidal_2d}
+      - {name: mask, kind: mask.tissue_2d}
+      - {name: plan, kind: patch_plan}
+    outputs:
+      - {name: manifest, kind: patch_manifest}
+    config:
+      materialize_pixels: false
+      batch_size: 32
+      max_patches: 100000
+      max_batch_bytes: 67108864
+      max_output_bytes: 268435456
+    resources: {memory_mb: 256}
+  - id: embed
+    operation: {name: embed.patches, version: "1"}
+    inputs:
+      - {name: plan, kind: patch_plan}
+      - {name: manifest, kind: patch_manifest}
+    outputs:
+      - {name: embeddings, kind: embedding_bag}
+    config:
+      encoder: reference-projection
+      embedding_dim: 64
+      channel_conversions: "bgr->rgb,rgba->rgb"
+      resample: none
+      batch_size: 32
+      max_input_batch_bytes: 33554432
+      max_output_batch_bytes: 1048576
+      memory_budget_bytes: 134217728
+      max_in_flight_batches: 1
+      prefetch: none
+      device: cpu
+      precision: fp32
+      max_patches: 100000
+      recovery: resume_verified
+    resources: {memory_mb: 1024}
+edges:
+  - [$input.image, tissue.image]
+  - [$input.image, plan.image]
+  - [tissue.mask, plan.mask]
+  - [$input.image, extract.image]
+  - [tissue.mask, extract.mask]
+  - [plan.plan, extract.plan]
+  - [plan.plan, embed.plan]
+  - [extract.manifest, embed.manifest]
+outputs:
+  plan: plan.plan
+  manifest: extract.manifest
+  embeddings: embed.embeddings

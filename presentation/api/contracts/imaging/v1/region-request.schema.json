@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pathology-ai.local/contracts/imaging/v1/region-request.schema.json",
+  "title": "Pathology AI Imaging API v1 - 2D region/tile request",
+  "description": "Region of a 2D pyramidal image addressed in the pixel grid of one pyramid level. Volumetric images are addressed through slice-request instead.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "image_id", "frame", "level", "x", "y", "width", "height", "encoding"],
+  "properties": {
+    "schema_version": {"const": "pathology-ai.imaging/1.0"},
+    "image_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"},
+    "frame": {"const": "wsi_level_pixel"},
+    "level": {"type": "integer", "minimum": 0},
+    "x": {"type": "integer", "minimum": 0},
+    "y": {"type": "integer", "minimum": 0},
+    "width": {"type": "integer", "minimum": 1, "maximum": 4096},
+    "height": {"type": "integer", "minimum": 1, "maximum": 4096},
+    "encoding": {"enum": ["png", "jpeg", "raw"]}
+  }
+}

@@ -1,0 +1,14 @@
+{"schema": "image-descriptor", "document": {
+  "schema_version": "pathology-ai.imaging/1.0",
+  "image_id": "syn-fixture-wsi-0001",
+  "modality": {"code": "wsi", "spatial_kind": "pyramidal_2d"},
+  "format": "synthetic-pyramid-2d",
+  "channel_order": "rgb",
+  "source_checksum": null,
+  "context": {"tissue": null, "disease": null},
+  "geometry": {"type": "pyramidal_2d", "frame": "wsi_level0_pixel", "width": 1024, "height": 768,
+    "levels": [{"index": 0, "width": 1024, "height": 768, "downsample": 1.0},
+               {"index": 1, "width": 512, "height": 384, "downsample": 2.0}],
+    "pixel_spacing_um": null},
+  "access": {"regions": true, "thumbnail": true, "volume": false, "slices": false}
+}}

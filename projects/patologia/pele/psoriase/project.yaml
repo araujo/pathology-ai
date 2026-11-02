@@ -1,0 +1,16 @@
+# SYNTHETIC technical demonstration. Not a psoriasis model; no clinical meaning.
+# Uses the non-MIL direct segmentation pipeline.
+project_id: prj-synthetic-skin-region-segmentation
+namespace: patologia/pele/psoriase
+display_name: Skin region segmentation (synthetic demonstration)
+dataset: {dataset_id: synthetic-skin-slides, version: "0.1.0"}
+task: {task_id: synthetic-skin-region-segmentation, version: "1.0.0"}
+pipeline: {pipeline_id: wsi-direct-segmentation, version: "1.0.0"}
+models:
+  segmenter: {model_id: synthetic-direct-segmenter-skin, version: "1.0.0"}
+preprocessing: {contract_id: synthetic-wsi-direct-mpp2, version: "1.0.0"}
+evaluation_protocol: none (synthetic architecture demonstration)
+intended_use: technical_demonstration
+research_use_acknowledged: true
+target_context: {tissue: skin, disease: psoriasis}
+seed: 37

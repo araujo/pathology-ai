@@ -1,0 +1,11 @@
+{
+  "api": "pathology-ai.imaging",
+  "version": "1.0",
+  "status": "contract-only (no server implemented in 001)",
+  "operations": [
+    {"id": "get_image", "method": "GET", "path": "/imaging/v1/images/{image_id}", "response": "image-descriptor"},
+    {"id": "read_region", "method": "POST", "path": "/imaging/v1/images/{image_id}/regions", "request": "region-request", "response": "binary image", "applies_to": ["pyramidal_2d"]},
+    {"id": "get_thumbnail", "method": "POST", "path": "/imaging/v1/images/{image_id}/thumbnail", "request": "thumbnail-request", "response": "binary image", "applies_to": ["pyramidal_2d"]},
+    {"id": "read_slice", "method": "POST", "path": "/imaging/v1/images/{image_id}/slices", "request": "slice-request", "response": "binary image", "applies_to": ["volume_3d", "volume_4d"]}
+  ]
+}

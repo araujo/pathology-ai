@@ -1,0 +1,1 @@
+{"schema": "slice-request", "reason": "image_id must not be a path", "document": {"schema_version": "pathology-ai.imaging/1.0", "image_id": "/data/ct/series1", "frame": "volume_voxel_index", "axis": 0, "index": 0, "time_index": null, "encoding": "raw"}}

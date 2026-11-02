@@ -1,0 +1,114 @@
+# Real-WSI patch embedding with the pretrained UNI encoder (SPEC-006), profile uni-official@1.
+# Same stages and operations as wsi-patch-embedding; only the configuration differs.
+# Resolution: the plan reads an explicitly selected stored level within 15% of 0.5 um/px at
+# 224 x 224 px, so the official Resize(224)/CenterCrop(224) are identities and nothing is
+# resampled (`resample: none`; the profile refuses any other value).
+# Physical scale: the UNI authors document pretraining at "20x" and state no um/px. The binding
+# below (0.5 um/px +/- 15%) is this experiment's explicit interpretation, recorded in the
+# embedding identity; it is not an official fact and not a framework default (owner decision O1).
+# Weights: bind a local, licensed checkpoint (`--checkpoint uni=PATH` or $PATHOLOGY_AI_CHECKPOINTS);
+# its SHA-256 must match the adapter's pin. Nothing is downloaded. UNI is CC-BY-NC-ND 4.0:
+# non-commercial academic research only. Embeddings are not diagnoses.
+schema_version: pathology-ai.pipeline/1
+pipeline_id: wsi-patch-embedding-uni
+version: "1.0.0"
+description: Candidate tissue, 224 px patch planning and streaming UNI embedding into a durable store.
+inputs:
+  - {name: image, kind: image.pyramidal_2d, spatial_kind: pyramidal_2d}
+stages:
+  - id: tissue
+    operation: {name: tissue.detect, version: "1"}
+    inputs:
+      - {name: image, kind: image.pyramidal_2d, spatial_kind: pyramidal_2d}
+    outputs:
+      - {name: mask, kind: mask.tissue_2d}
+    config:
+      detector: saturation_otsu
+      validity_policy: require_reported
+      mask_level: -1
+      max_mask_pixels: 1048576
+      max_decoded_pixels: 67108864
+      tile_px: 2048
+      min_threshold: 8
+      open_radius: 0
+      close_radius: 0
+    resources: {memory_mb: 512}
+  - id: plan
+    operation: {name: patch.plan, version: "1"}
+    inputs:
+      - {name: image, kind: image.pyramidal_2d, spatial_kind: pyramidal_2d}
+      - {name: mask, kind: mask.tissue_2d}
+    outputs:
+      - {name: plan, kind: patch_plan}
+    config:
+      units: pixels
+      width: 224
+      height: 224
+      stride_x: 0.0
+      stride_y: 0.0
+      level: -1
+      target_spacing_um: 0.5
+      spacing_tolerance: 0.15
+      grid_origin_x: 0
+      grid_origin_y: 0
+      edge_policy: inside_only
+      min_tissue_fraction: 0.5
+      min_acquired_fraction: 0.9
+      validity_policy: require_reported
+      selection: fail_closed
+      max_patches: 100000
+      max_candidates: 1000000
+    resources: {memory_mb: 512}
+  - id: extract
+    operation: {name: patch.extract, version: "1"}
+    inputs:
+      - {name: image, kind: image.pyramidal_2d, spatial_kind: pyramidal_2d}
+      - {name: mask, kind: mask.tissue_2d}
+      - {name: plan, kind: patch_plan}
+    outputs:
+      - {name: manifest, kind: patch_manifest}
+    config:
+      materialize_pixels: false
+      batch_size: 32
+      max_patches: 100000
+      max_batch_bytes: 67108864
+      max_output_bytes: 268435456
+    resources: {memory_mb: 256}
+  - id: embed
+    operation: {name: embed.patches, version: "1"}
+    inputs:
+      - {name: plan, kind: patch_plan}
+      - {name: manifest, kind: patch_manifest}
+    outputs:
+      - {name: embeddings, kind: embedding_bag}
+    config:
+      encoder: uni
+      profile: uni-official@1
+      model_spacing_um: 0.5
+      model_spacing_tolerance: 0.15
+      channel_conversions: "bgr->rgb,rgba->rgb"
+      resample: none
+      batch_size: 16
+      max_input_batch_bytes: 33554432
+      max_output_batch_bytes: 1048576
+      memory_budget_bytes: 536870912
+      max_in_flight_batches: 1
+      prefetch: none
+      device: cpu
+      precision: fp32
+      max_patches: 100000
+      recovery: resume_verified
+    resources: {memory_mb: 4096}
+edges:
+  - [$input.image, tissue.image]
+  - [$input.image, plan.image]
+  - [tissue.mask, plan.mask]
+  - [$input.image, extract.image]
+  - [tissue.mask, extract.mask]
+  - [plan.plan, extract.plan]
+  - [plan.plan, embed.plan]
+  - [extract.manifest, embed.manifest]
+outputs:
+  plan: plan.plan
+  manifest: extract.manifest
+  embeddings: embed.embeddings

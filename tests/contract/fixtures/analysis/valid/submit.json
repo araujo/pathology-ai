@@ -1,0 +1,1 @@
+{"schema": "submit-analysis-request", "document": {"schema_version": "pathology-ai.analysis/1.0", "project_id": "prj-synthetic-lung-slide-endpoint", "image_id": "syn-lung-0005", "research_use_acknowledged": true}}
