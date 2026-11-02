@@ -19,6 +19,8 @@
 # D-9 (pilot infrastructure: EBI HTTPS, local Mac, MPS) was approved later the same day. Version
 # "2" is kept: no v2 manifest exists yet, so no document named surgen-msi@2 can disagree with
 # this ledger. The v1 reproduction now reverts both approvals (D-7 and D-9 back to pending).
+# D-10 (UNI and SurGen terms) was approved after D-9 (PROMPT-008C2-AUTH), still within the
+# unbuilt version "2"; the v1 reproduction reverts it too (D-7, D-9 and D-10 back to pending).
 # Once manifests/v2 is built, any further ledger change requires version "3".
 schema: pathology-ai.cohort-config/1
 cohort_id: surgen-msi
@@ -228,7 +230,7 @@ decisions:
   # D-9 approves the route and the compute environment for the Phase C2 pilot only. It is a
   # planning decision: it does not authorize downloading WSIs, running UNI, training, or
   # starting Phase C2. Phase C2 execution needs D-10 and a separate, explicit owner
-  # authorization (.claude/reports/008-phase-c2-execution-plan.md, gates G1-G12).
+  # authorization (.claude/reports/008-phase-c2-execution-plan.md, gates G1-G13).
   # Storage locations are operational: they are bound at run time and never enter this file.
   - id: D-9
     summary: >-
@@ -245,10 +247,33 @@ decisions:
     reference: >-
       PROMPT-008D9 (owner decision D-9, planning-only scope); evidence in
       .claude/reports/008-d9-infrastructure-readiness.md
+  # D-10 records licence compliance. It does not authorize Phase C2 execution: that needs a
+  # separate owner entry naming "Phase C2 execution authorized" and the c2-binding SHA-256
+  # (execution plan §1.2, gate G6). No account identifier or email address is recorded here.
   - id: D-10
-    summary: Confirm UNI terms cover this study and record the SurGen data terms.
-    status: pending
+    summary: >-
+      UNI and SurGen terms confirmed for this study (evidence:
+      .claude/reports/008-d10-license-evidence.md). UNI (CC-BY-NC-ND 4.0, gated): the
+      checkpoint was obtained through the owner's own individually approved Hugging Face
+      access, registered with an institutional email; the declared use, non-commercial
+      academic research, covers the SurGen MSI/dMMR experiment; the owner is the only
+      operator, and any other operator registers individually first. Non-distribution: UNI
+      weights, UNI embeddings and UNI-derived MIL weights never leave the owner's control;
+      results are published as aggregates only; no commercial use of UNI derivatives;
+      attribution to Chen et al. 2024. SurGen S-BIAD1285 (CC BY 4.0; label CSVs CC0): the five
+      approved pilot WSIs may be downloaded by EBI HTTPS when Phase C2 requires it;
+      attribution to DOI 10.6019/S-BIAD1285 and the GigaScience data note, NRS Lothian
+      Biorepository acknowledgement. EBI publishes no checksums: the SHA-256 of a downloaded
+      WSI is computed locally at first download and proves only that the bytes did not change
+      afterwards, not that they equal what the authors deposited. The institutional ethics
+      position (evidence S-e) is not recorded and is open before publication.
+    status: approved
     gates: [pilot, extraction]
+    approver: Gustavo Medeiros de Araujo (repository owner)
+    approved_on: "2026-11-02"
+    reference: >-
+      PROMPT-008C2-AUTH (owner confirmation of evidence items U-b, U-c, U-e/U-f and S-c);
+      .claude/reports/008-d10-license-evidence.md
 
 limitations:
   - Labels are traceable to the published split CSVs only; the clinical tables behind them were not available.

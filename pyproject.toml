@@ -74,6 +74,8 @@ select = ["E", "F", "I", "B", "UP"]
 [tool.mypy]
 python_version = "3.12"
 strict = true
+# The SPEC-008 Phase C2 operator tools are scripts (not packages), imported by their tests.
+mypy_path = "projects/cohorts/surgen-msi/c2-pilot"
 files = [
     "domain",
     "ports",

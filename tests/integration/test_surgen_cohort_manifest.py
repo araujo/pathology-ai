@@ -33,8 +33,9 @@ V1 = COHORT / "manifests" / "v1"
 DIGEST_V1 = "854f009fdb30e41304b9959a53bc3fd2e0beede091bd4f47061af931383a5a3c"
 V1_D7_SUMMARY = "Extraction scale (0.5 um/px +-15% or 1.0 um/px)."
 V1_D9_SUMMARY = "Compute, storage and WSI download route for Phases C/D."
+V1_D10_SUMMARY = "Confirm UNI terms cover this study and record the SurGen data terms."
 # The decisions approved after v1 was built, with the summaries v1 recorded while pending.
-V1_PENDING = {"D-7": V1_D7_SUMMARY, "D-9": V1_D9_SUMMARY}
+V1_PENDING = {"D-7": V1_D7_SUMMARY, "D-9": V1_D9_SUMMARY, "D-10": V1_D10_SUMMARY}
 SPLIT_V1 = "0c8c94fc9d73ff7ff87f55c57ef9ce8a8a1fc6dd07e64534daf8f7514d065616"
 
 needs_manifest = pytest.mark.skipif(
@@ -88,7 +89,7 @@ def test_manifest_v1_rebuilds_from_the_pinned_sources() -> None:
     rebuilt = service.reconcile(_as_of_v1(cfg.definition))
     assert rebuilt.digest == DIGEST_V1
     assert rebuilt == read_manifest(V1 / MANIFEST_FILE)
-    # The current definition (D-7, D-9 approved) changes the decision ledger only, not the cohort.
+    # The current definition (D-7, D-9, D-10 approved) changes the decision ledger only.
     current = service.reconcile(cfg.definition)
     assert current.version == "2" and current.digest != DIGEST_V1
     assert (current.records, current.split, current.counts, current.sources) == (
@@ -100,7 +101,7 @@ def test_manifest_v1_rebuilds_from_the_pinned_sources() -> None:
 
 
 def _as_of_v1(definition: CohortDefinition) -> CohortDefinition:
-    """The definition manifest v1 was built from: version "1", D-7 and D-9 still pending."""
+    """The definition manifest v1 was built from: version "1", D-7, D-9 and D-10 pending."""
     decisions = tuple(
         Decision(d.decision_id, V1_PENDING[d.decision_id], DecisionStatus.PENDING, d.gates)
         if d.decision_id in V1_PENDING
@@ -112,7 +113,7 @@ def _as_of_v1(definition: CohortDefinition) -> CohortDefinition:
 
 @needs_manifest
 def test_configuration_differs_from_v1_only_by_the_recorded_approvals() -> None:
-    """Manifest v1 is immutable; the configuration has moved on by two recorded decisions."""
+    """Manifest v1 is immutable; the configuration has moved on by three recorded decisions."""
     cfg = load_cohort_config(COHORT / "cohort.yaml")
     m = read_manifest(V1 / MANIFEST_FILE)
     assert m.version == "1" and cfg.definition.version == "2"
@@ -124,7 +125,7 @@ def test_configuration_differs_from_v1_only_by_the_recorded_approvals() -> None:
     pending = {
         d.decision_id for d in cfg.definition.decisions if d.status is DecisionStatus.PENDING
     }
-    assert pending == {"D-10"}
+    assert pending == set()
     d9 = next(d for d in cfg.definition.decisions if d.decision_id == "D-9")
     assert d9.status is DecisionStatus.APPROVED and d9.gates == ("extraction",)
     assert d9.approved_on == "2026-11-02" and "PROMPT-008D9" in str(d9.reference)
@@ -133,6 +134,13 @@ def test_configuration_differs_from_v1_only_by_the_recorded_approvals() -> None:
     # D-9 is planning-only: its own record must say that it authorizes no execution.
     assert "Planning and infrastructure preparation only" in d9.summary
     assert "no WSI download, UNI execution, MIL training or Phase C2 execution" in d9.summary
+    # D-10 records licence compliance only; it must not read as a Phase C2 authorization.
+    d10 = next(d for d in cfg.definition.decisions if d.decision_id == "D-10")
+    assert d10.status is DecisionStatus.APPROVED and d10.gates == ("pilot", "extraction")
+    assert d10.approved_on == "2026-11-02" and "PROMPT-008C2-AUTH" in str(d10.reference)
+    for term in ("CC-BY-NC-ND 4.0", "non-commercial", "UNI embeddings", "CC BY 4.0", "EBI HTTPS"):
+        assert term in d10.summary
+    assert "Phase C2 execution authorized" not in d10.summary and "@" not in d10.summary
     for decision_id in V1_PENDING:  # the immutable record keeps its history
         v1 = next(d for d in m.decisions if d.decision_id == decision_id)
         assert v1.status is DecisionStatus.PENDING and v1.summary == V1_PENDING[decision_id]
