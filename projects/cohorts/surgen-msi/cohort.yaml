@@ -21,6 +21,10 @@
 # this ledger. The v1 reproduction now reverts both approvals (D-7 and D-9 back to pending).
 # D-10 (UNI and SurGen terms) was approved after D-9 (PROMPT-008C2-AUTH), still within the
 # unbuilt version "2"; the v1 reproduction reverts it too (D-7, D-9 and D-10 back to pending).
+# D-11 (the bound Phase C2 authorization, PROMPT-008C2-EXEC) was added after D-10, still within
+# the unbuilt version "2". It did not exist when v1 was built: the v1 reproduction removes it.
+# D-12 (technical end-to-end smoke test) was added after D-11, still within the unbuilt version
+# "2". It did not exist when v1 was built either: the v1 reproduction removes it too.
 # Once manifests/v2 is built, any further ledger change requires version "3".
 schema: pathology-ai.cohort-config/1
 cohort_id: surgen-msi
@@ -274,6 +278,41 @@ decisions:
     reference: >-
       PROMPT-008C2-AUTH (owner confirmation of evidence items U-b, U-c, U-e/U-f and S-c);
       .claude/reports/008-d10-license-evidence.md
+  # D-11 is the explicit Phase C2 authorization required by gate G6 (execution plan §1.2). It is
+  # bound to c2-binding.json; any change to a bound file voids it, and it is never edited.
+  - id: D-11
+    summary: >-
+      Phase C2 execution authorized for pilot selection pai-pilot-5da7534b on manifest
+      surgen-msi@1: EBI download of the 5 pending WSIs and UNI extraction per D-7/D-9,
+      exactly as bound by c2-binding sha256 14fd2818ceec5c424f17700473d07c2c713567066ab866ceb72ff377bf0d3039.
+    status: approved
+    gates: [pilot, extraction]
+    approver: Gustavo Medeiros de Araujo (repository owner)
+    approved_on: "2026-11-04"
+    reference: >-
+      PROMPT-008C2-EXEC (owner authorization of the bound eight-slide pilot);
+      .claude/reports/008-c2-authorization-preparation.md
+  # D-12 is an engineering validation only. It reads two C2-pinned source WSIs (T224, T130)
+  # read-only, but reuses no C2-derived embedding or training output. It writes nothing under the
+  # C2 data root, and its metrics are never reported as evidence (ADR-008 D9).
+  - id: D-12
+    summary: >-
+      Technical end-to-end smoke test only (engineering validation, not a scientific experiment):
+      the five available verified pilot WSIs SR1482_40X_HE_T368_01, SR1482_40X_HE_T224_01,
+      SR1482_40X_HE_T130_01, SR1482_40X_HE_T156_01 and SR386_40X_HE_T558_01, with their manifest
+      surgen-msi@1 labels and split assignments; tissue detection and patch planning; UNI
+      embedding on MPS with the approved protocol (uni-official@1, 0.5 um/px +-15%, RGB 224x224,
+      fp32, batch size 16) and a deterministic cap of 256 patches per slide (uniform_stride);
+      MIL training on CPU for 3 epochs, seed 13; checkpoint saving, evaluation and inference;
+      technical reporting. Outputs stay under the owner's control (D-10). Not authorized: Phase
+      D, further WSI downloads, full-cohort training, or any change to the C2 selection
+      pai-pilot-5da7534b or its binding. No metric is reported as clinical or scientific evidence.
+    status: approved
+    gates: [extraction]
+    approver: Gustavo Medeiros de Araujo (repository owner)
+    approved_on: "2026-11-08"
+    reference: >-
+      Owner approval of the technical smoke E2E; plan in .claude/reports/008-smoke-e2e-plan.md
 
 limitations:
   - Labels are traceable to the published split CSVs only; the clinical tables behind them were not available.

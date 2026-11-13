@@ -36,6 +36,9 @@ V1_D9_SUMMARY = "Compute, storage and WSI download route for Phases C/D."
 V1_D10_SUMMARY = "Confirm UNI terms cover this study and record the SurGen data terms."
 # The decisions approved after v1 was built, with the summaries v1 recorded while pending.
 V1_PENDING = {"D-7": V1_D7_SUMMARY, "D-9": V1_D9_SUMMARY, "D-10": V1_D10_SUMMARY}
+# The decisions added to the ledger after v1 was built (absent from v1).
+V1_ABSENT = {"D-11", "D-12"}
+C2_BINDING = "14fd2818ceec5c424f17700473d07c2c713567066ab866ceb72ff377bf0d3039"
 SPLIT_V1 = "0c8c94fc9d73ff7ff87f55c57ef9ce8a8a1fc6dd07e64534daf8f7514d065616"
 
 needs_manifest = pytest.mark.skipif(
@@ -89,7 +92,7 @@ def test_manifest_v1_rebuilds_from_the_pinned_sources() -> None:
     rebuilt = service.reconcile(_as_of_v1(cfg.definition))
     assert rebuilt.digest == DIGEST_V1
     assert rebuilt == read_manifest(V1 / MANIFEST_FILE)
-    # The current definition (D-7, D-9, D-10 approved) changes the decision ledger only.
+    # The current definition (D-7, D-9, D-10 approved, D-11, D-12 added) changes the ledger only.
     current = service.reconcile(cfg.definition)
     assert current.version == "2" and current.digest != DIGEST_V1
     assert (current.records, current.split, current.counts, current.sources) == (
@@ -101,19 +104,20 @@ def test_manifest_v1_rebuilds_from_the_pinned_sources() -> None:
 
 
 def _as_of_v1(definition: CohortDefinition) -> CohortDefinition:
-    """The definition manifest v1 was built from: version "1", D-7, D-9 and D-10 pending."""
+    """The definition v1 was built from: version "1", D-7, D-9, D-10 pending, no D-11/D-12."""
     decisions = tuple(
         Decision(d.decision_id, V1_PENDING[d.decision_id], DecisionStatus.PENDING, d.gates)
         if d.decision_id in V1_PENDING
         else d
         for d in definition.decisions
+        if d.decision_id not in V1_ABSENT
     )
     return dataclasses.replace(definition, version="1", decisions=decisions)
 
 
 @needs_manifest
 def test_configuration_differs_from_v1_only_by_the_recorded_approvals() -> None:
-    """Manifest v1 is immutable; the configuration has moved on by three recorded decisions."""
+    """Manifest v1 is immutable; the configuration has moved on by five recorded decisions."""
     cfg = load_cohort_config(COHORT / "cohort.yaml")
     m = read_manifest(V1 / MANIFEST_FILE)
     assert m.version == "1" and cfg.definition.version == "2"
@@ -141,6 +145,23 @@ def test_configuration_differs_from_v1_only_by_the_recorded_approvals() -> None:
     for term in ("CC-BY-NC-ND 4.0", "non-commercial", "UNI embeddings", "CC BY 4.0", "EBI HTTPS"):
         assert term in d10.summary
     assert "Phase C2 execution authorized" not in d10.summary and "@" not in d10.summary
+    # D-11 is the bound Phase C2 authorization (execution plan §1.2, gate G6).
+    d11 = next(d for d in cfg.definition.decisions if d.decision_id == "D-11")
+    assert d11.status is DecisionStatus.APPROVED and d11.gates == ("pilot", "extraction")
+    assert d11.approved_on == "2026-11-04" and "PROMPT-008C2-EXEC" in str(d11.reference)
+    summary = " ".join(d11.summary.split())
+    for term in ("Phase C2 execution authorized", "pai-pilot-5da7534b", "surgen-msi@1"):
+        assert term in summary
+    assert f"c2-binding sha256 {C2_BINDING}" in summary
+    assert all(d.decision_id not in V1_ABSENT for d in m.decisions)
+    # D-12 is the technical smoke test only; it must never read as a C2 or Phase D authorization.
+    d12 = next(d for d in cfg.definition.decisions if d.decision_id == "D-12")
+    assert d12.status is DecisionStatus.APPROVED and d12.approved_on == "2026-11-08"
+    assert d12.gates == ("extraction",)  # scoped to the extraction gate only, never pilot
+    summary = " ".join(d12.summary.split())
+    for term in ("Technical end-to-end smoke test only", "256 patches per slide", "uniform_stride"):
+        assert term in summary
+    assert "Phase C2 execution authorized" not in summary and "c2-binding sha256" not in summary
     for decision_id in V1_PENDING:  # the immutable record keeps its history
         v1 = next(d for d in m.decisions if d.decision_id == decision_id)
         assert v1.status is DecisionStatus.PENDING and v1.summary == V1_PENDING[decision_id]
