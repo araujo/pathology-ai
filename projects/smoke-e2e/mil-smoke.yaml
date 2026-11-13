@@ -1,0 +1,39 @@
+# SPEC-008 technical end-to-end smoke test (smoke_e2e). NOT Phase C2, NOT Phase D.
+# Purpose: exercise WSI -> tissue -> patches -> UNI -> MIL train -> checkpoint -> inference.
+# Labels are the manifest v1 labels of 5 available pilot slides; with 3 training and 2
+# validation slides every metric is meaningless and is never reported as evidence.
+# Copied at run time into the smoke output directory, next to the generated labels.csv and
+# split.csv (paths below are relative to the copied file).
+schema: pathology-ai.mil-experiment-config/1
+name: smoke-e2e-msi-technical
+task:
+  id: surgen-msi-smoke
+  version: "1"
+  type: binary_classification
+  classes: [negative, positive]
+  positive_class: positive
+dataset:
+  id: surgen-msi-smoke-e2e
+  version: "1"
+  labels: labels.csv
+  label_source: surgen-msi@1 manifest v1 (pilot selection pai-pilot-5da7534b)
+  label_source_version: "854f009fdb30e41304b9959a53bc3fd2e0beede091bd4f47061af931383a5a3c"
+  compatibility_policy: exact@1
+split:
+  strategy: external@1
+  file: split.csv
+model:
+  architecture: attention-mil
+  hyperparameters: {attention_dim: 16, dropout: 0.0, gated: true, hidden_dim: 32}
+training:
+  seed: 13
+  epochs: 3
+  batch_slides: 3
+  optimizer: {name: adam, learning_rate: 0.001, weight_decay: 0.0001}
+  gradient_clip_norm: 5.0
+  class_weighting: false
+  early_stopping: {metric: validation_loss, mode: min, patience: 3, min_delta: 0.0}
+  device: cpu
+  bags:
+    train: {max_instances: 128, seed: 13, max_batch_bytes: 67108864}
+    eval: {max_instances: null, seed: 0, max_batch_bytes: 67108864}

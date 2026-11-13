@@ -1,0 +1,46 @@
+{
+ "cohort_digest": "854f009fdb30e41304b9959a53bc3fd2e0beede091bd4f47061af931383a5a3c",
+ "decisions_required": [
+  "D-6",
+  "D-7",
+  "D-9",
+  "D-10"
+ ],
+ "downloads": {
+  "SR1482_40X_HE_T130_01": "https://ftp.ebi.ac.uk/biostudies/fire/S-BIAD/285/S-BIAD1285/Files/SR1482_WSIs/SR1482_40X_HE_T130_01.czi",
+  "SR1482_40X_HE_T224_01": "https://ftp.ebi.ac.uk/biostudies/fire/S-BIAD/285/S-BIAD1285/Files/SR1482_WSIs/SR1482_40X_HE_T224_01.czi",
+  "SR386_40X_HE_T044_01": "https://ftp.ebi.ac.uk/biostudies/fire/S-BIAD/285/S-BIAD1285/Files/SR386_WSIs/SR386_40X_HE_T044_01.czi",
+  "SR386_40X_HE_T440_01": "https://ftp.ebi.ac.uk/biostudies/fire/S-BIAD/285/S-BIAD1285/Files/SR386_WSIs/SR386_40X_HE_T440_01.czi",
+  "SR386_40X_HE_T489_01": "https://ftp.ebi.ac.uk/biostudies/fire/S-BIAD/285/S-BIAD1285/Files/SR386_WSIs/SR386_40X_HE_T489_01.czi"
+ },
+ "files": {
+  ".claude/reports/008-phase-c2-execution-plan.md": "08865f02abb5cc72061b8bf4ab3c0d2aa6e16ddaf6d822f858c900e48a21e818",
+  "pipelines/wsi-patch-embedding-uni.v1.yaml": "cb08989a1ad5d6f4dae67005aca13219b11a7dc7d3f12dae21dd7258bf2fe29c",
+  "pipelines/wsi-tissue-patch-extraction.v1.yaml": "2fe5e6ce83e2263d4d44eb1b96989652db5854873577637e0086b4f2edb7f661",
+  "projects/cohorts/surgen-msi/c2-pilot/c2_preflight.py": "849a0125df25bf3804090640abc6c8c35a96c1534e170c4ba89b549319284e8d",
+  "projects/cohorts/surgen-msi/c2-pilot/c2_wsi.py": "96fc3f19cb5a46f0355e3f942f79c6dc6579c6b974aa0afaffd2ad0964e50b85",
+  "projects/cohorts/surgen-msi/inventories/pai-wsi-inventory-783f44e2ea71bead23ce78c80f069e12/wsi-inventory.json": "4d8b53a5152e01787ca9400ad68533ec310595afb6f42d0a5e28c8413ac91343",
+  "projects/cohorts/surgen-msi/manifests/v1/cohort-manifest.json": "f7748332c6ce866e857ad0e724cd9e24e23182f7092a2752803239da143bd084",
+  "projects/cohorts/surgen-msi/manifests/v1/reconciliation.csv": "69c3728c64ede8bc106e9ff0def9e879ab57636c836c4212cd3a361c06241781",
+  "projects/cohorts/surgen-msi/manifests/v1/split.csv": "48105e865e68cd33f7f0c06fe8350015a8352793a3d45730e8f8fb629701f8cf",
+  "projects/cohorts/surgen-msi/pilot.yaml": "333fe05fa510af95ef7d9774b9047f39a7e012fa7a8c14442a51bc26057c5f3f",
+  "projects/cohorts/surgen-msi/pilots/pai-pilot-5da7534bcaa4d30c93f4eae703b3d479/pilot-selection.json": "bc320a1b502e816ec5d0f04835b7cd97a5071ed9c4b026e00d6868268d464754"
+ },
+ "local_sources": {
+  "SR1482_40X_HE_T156_01": {
+   "legacy_path": "spec0245_corpus/SR1482_40X_HE_T156_01.czi",
+   "sha256": "2363380e036443e6c620b0cae3149abac2c8059a40776e758fe7f4b9df8f4f20"
+  },
+  "SR1482_40X_HE_T368_01": {
+   "legacy_path": "train/WSI/SR1482_40X_HE_T368_01.czi",
+   "sha256": "9f35f73dfc7e250efa54a343606061ef9aa2826b8ae5ddeada5e8ba08af78d8e"
+  },
+  "SR386_40X_HE_T558_01": {
+   "legacy_path": "validate/WSI/SR386_40X_HE_T558_01.czi",
+   "sha256": "619200db97a683bcba057a2fdf08c34d56209bb0cafbe712615f771c6805bee2"
+  }
+ },
+ "schema": "pathology-ai.c2-binding/1",
+ "selection_id": "pai-pilot-5da7534bcaa4d30c93f4eae703b3d479",
+ "uni_checkpoint_sha256": "56ef09b44a25dc5c7eedc55551b3d47bcd17659a7a33837cf9abc9ec4e2ffb40"
+}

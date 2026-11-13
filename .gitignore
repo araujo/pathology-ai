@@ -7,3 +7,34 @@ __pycache__/
 dist/
 build/
 *.egg-info/
+
+# Data and generated outputs never belong in version control (D-10: UNI weights, UNI embeddings
+# and UNI-derived model weights stay under the owner's control). Data lives outside the repository
+# (~/pathology-ai-data/); these patterns guard against an accidental copy. Use `git add -f` only
+# for a reviewed, licence-cleared test fixture.
+# Whole-slide and microscopy images
+*.czi
+*.svs
+*.ndpi
+*.mrxs
+*.scn
+*.vsi
+*.tif
+*.tiff
+# Model weights and checkpoints
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+*.onnx
+weights.bin
+# Embedding stores and arrays
+pai-emb-*/
+*.npy
+*.npz
+# Generated run outputs
+pathology-ai-data/
+smoke_e2e/
+pai-milexp-*/
+predictions-*.json
+*.part
